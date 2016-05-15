@@ -1,0 +1,28 @@
+Profile: profile5
+Exchanges: Anxhk, Bitbay, Bitfinex, Bitkonan, Bitstamp, Btce, Campbx, Coinbase, Cointrader, Gatecoin, Hitbtc, Itbit, Kraken, Lakebtc, Okcoin, Rock, Vircurex, 
+
+GMT, Bid Total Fiat, Ask Total BTC, Bid10, Ask10, Bid100, Ask100, Bid1000, Ask1000, Bid10000, Ask10000, Bid50000, Ask50000, Bid80000, Ask80000, Bid100000, Ask100000, BidRatio10, BidRatio100, BidRatio1000, BidRatio10000, BidRatio50000, BidRatio80000, BidRatio100000, 
+2016-01-07 15:14:01, 21747516,40629, 455.23, 410.98, 454.65, 444.32, 453.05, 451.69, 445.32, 456.59, 375.84, False, 270.3, False, 215.31, False, -0.007, -0.006, -0.003, 0.015, 0.168, 0.402, 0.524, 
+2016-01-11 12:20:01, 20021288,39858, 448.18, 411.01, 447.16, 438.58, 445.7, 445.36, 439.36, 451.44, 359.3, False, 246.38, False, 195.05, False, -0.007, -0.005, -0.002, 0.012, 0.192, 0.446, 0.562, 
+2016-01-14 00:20:37, 19705685,43287, 432.84, 411.01, 432.22, 426.96, 431.32, 431.45, 424.73, 437.83, 348.89, False, 245.71, False, 191.83, False, -0.006, -0.004, -0.002, 0.013, 0.189, 0.429, 0.554, 
+2016-01-16 12:22:12, 16701104,49207, 374.1, 363.98, 373.97, 365.41, 368.75, 367.97, 360.11, 376.05, 295.37, False, 208.46, False, 162.72, False, -0.015, -0.014, 0.0, 0.023, 0.199, 0.435, 0.559, 
+2016-01-19 00:22:28, 18217091,49728, 390.36, 381.14, 388.42, 383.9, 385.61, 385.58, 378.72, 392.96, 315.64, False, 227.12, False, 181.9, False, -0.012, -0.007, 0.0, 0.018, 0.181, 0.411, 0.528, 
+2016-01-21 12:22:53, 18711283,38641, 416.55, 405.13, 416.2, 413.49, 414.29, 415.86, 407.16, 424.21, 331.06, False, 233.02, False, 186.95, False, -0.005, -0.005, 0.0, 0.017, 0.201, 0.438, 0.549, 
+2016-01-24 00:23:08, 16699842,50804, 389.44, 359.59, 387.88, 382.76, 385.96, 387.5, 378.48, 396.37, 303.96, 480.54, 204.22, False, 156.78, False, -0.009, -0.005, 0.0, 0.019, 0.212, 0.471, 0.594, 
+2016-03-12 20:18:01, 17538090,47554, 410.74, 402.79, 410.25, 408.36, 409.39, 410.04, 403.81, 415.4, 323.85, False, 214.53, False, 166.11, False, -0.003, -0.002, 0.0, 0.014, 0.209, 0.476, 0.594, 
+2016-03-15 08:19:33, 18872949,43278, 417.08, 401.22, 416.05, 413.09, 415.02, 415.39, 410.69, 419.9, 336.72, False, 231.41, False, 173.57, False, -0.005, -0.002, 0.0, 0.01, 0.189, 0.442, 0.582, 
+2016-03-17 20:21:05, 18984121,44321, 421.91, 408.64, 420.02, 414.04, 419.08, 417.96, 414.6, 422.47, 338.65, False, 232.41, False, 174.44, False, -0.007, -0.002, 0.0, 0.011, 0.192, 0.445, 0.584, 
+2016-03-20 08:21:02, 18159266,39743, 412.68, 397.67, 411.42, 408.38, 410.43, 410.69, 403.69, 416.76, 332.13, False, 226.83, False, 169.47, False, -0.005, -0.002, 0.0, 0.016, 0.191, 0.447, 0.587, 
+2016-03-22 20:21:17, 18507621,39720, 418.34, 413.03, 417.34, 413.39, 416.27, 416.68, 409.56, 421.56, 336.69, False, 226.5, False, 170.02, False, -0.005, -0.003, 0.0, 0.016, 0.191, 0.456, 0.592, 
+2016-03-25 08:23:02, 18261330,42564, 418.12, 407.37, 416.32, 413.55, 415.45, 416.27, 410.07, 419.68, 334.82, False, 225.17, False, 168.7, False, -0.006, -0.002, 0.0, 0.013, 0.194, 0.458, 0.594, 
+2016-03-27 20:23:35, 19020447,37321, 428.19, 411.59, 427.74, 423.38, 426.34, 425.91, 419.11, 430.82, 341.72, False, 233.49, False, 174.46, False, -0.004, -0.003, 0.0, 0.017, 0.198, 0.452, 0.591, 
+2016-03-30 08:24:16, An exchange was down. This profile is being skipped. Failed exchange = Cointrader, URL=https://www.cointrader.net/api4/stats/orders/BTCUSD/all/1000
+2016-04-01 20:24:50, An exchange was down. This profile is being skipped. Failed exchange = Cointrader, URL=https://www.cointrader.net/api4/stats/orders/BTCUSD/all/1000
+2016-04-10 22:04:01, An exchange was down. This profile is being skipped. Failed exchange = Cointrader, URL=https://www.cointrader.net/api4/stats/orders/BTCUSD/all/1000
+2016-04-13 10:04:41, An exchange was down. This profile is being skipped. Failed exchange = Cointrader, URL=https://www.cointrader.net/api4/stats/orders/BTCUSD/all/1000
+2016-04-15 22:05:14, An exchange was down. This profile is being skipped. Failed exchange = Cointrader, URL=https://www.cointrader.net/api4/stats/orders/BTCUSD/all/1000
+2016-04-18 10:05:25, An exchange was down. This profile is being skipped. Failed exchange = Cointrader, URL=https://www.cointrader.net/api4/stats/orders/BTCUSD/all/1000
+2016-04-25 03:19:44, An exchange was down. This profile is being skipped. Failed exchange = Cointrader, URL=https://www.cointrader.net/api4/stats/orders/BTCUSD/all/1000
+2016-04-25 21:32:39, An exchange was down. This profile is being skipped. Failed exchange = Cointrader, URL=https://www.cointrader.net/api4/stats/orders/BTCUSD/all/1000
+2016-04-28 09:33:06, An exchange was down. This profile is being skipped. Failed exchange = Cointrader, URL=https://www.cointrader.net/api4/stats/orders/BTCUSD/all/1000
+2016-05-01 01:37:51, An exchange was down. This profile is being skipped. Failed exchange = Cointrader, URL=https://www.cointrader.net/api4/stats/orders/BTCUSD/all/1000

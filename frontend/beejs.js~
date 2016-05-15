@@ -1,0 +1,329 @@
+function checkPassword(response)
+{
+    if (response == "Invalid Password")
+    {
+        document.getElementById("status").innerHTML =
+            "<span style='color: red'>Invalid Access Code</span>";
+        return 1;
+    }
+    else
+    {
+        document.getElementById("status").innerHTML =
+            "<span style='color: green'>Valid Access Code</span>";
+        return 0;
+    }
+}
+
+function engineStart()
+{
+    var password = document.getElementById("password").value;
+    var HTMLStatsList = document.getElementById("statsList");
+    var req = new XMLHttpRequest();
+    req.open("GET",
+        "/beeServices/?function=statstEngine&action=statstart&password=" +
+        password, false);
+    req.send(null);
+    HTMLStatsList.innerHTML = req.responseText;
+    checkPassword(req.responseText);
+}
+
+function engineStop()
+{
+    var password = document.getElementById("password").value;
+    var HTMLStatsList = document.getElementById("statsList");
+    var req = new XMLHttpRequest();
+    req.open("GET",
+        "/beeServices/?function=statstEngine&action=statstop&password=" +
+        password, false);
+    req.send(null);
+    HTMLStatsList.innerHTML = req.responseText;
+    checkPassword(req.responseText);
+}
+
+function engineCheck()
+{
+    var password = document.getElementById("password").value;
+    var HTMLStatsList = document.getElementById("statsList");
+    var req = new XMLHttpRequest();
+    req.open("GET",
+        "/beeServices/?function=statstEngine&action=statcheck&password=" +
+        password, false);
+    req.send(null);
+    HTMLStatsList.innerHTML = req.responseText;
+    checkPassword(req.responseText);
+}
+
+function getProfileNameList()
+{
+    var password = document.getElementById("password").value;
+    var HTMLProfileNameList = document.getElementById("profileNameList");
+    HTMLProfileNameList.options.length = 0;
+    var req = new XMLHttpRequest();
+    req.open("GET", "/beeServices/?function=getProfileNameList&password=" +
+        password, false);
+    req.send(null);
+    if (checkPassword(req.responseText) == 1)
+    {}
+    else
+    {
+        var APIResponseJSON = req.responseText;
+        var profileNameList = JSON.parse(APIResponseJSON);
+        for (var profileIndex = 0; profileIndex < profileNameList.length; profileIndex++)
+        {
+            currentOption = document.createElement("option");
+            currentOption.text = profileNameList[profileIndex];
+            currentOption.value = profileNameList[profileIndex];
+            HTMLProfileNameList.add(currentOption);
+        }
+        HTMLProfileNameListSize = HTMLProfileNameList.options.length / 2;
+        if (HTMLProfileNameListSize < 12)
+        {
+            HTMLProfileNameList.size = HTMLProfileNameListSize;
+        }
+        else
+        {
+            HTMLProfileNameList.size = 12;
+        }
+    }
+}
+
+function getExchangeList()
+{
+    var password = document.getElementById("password").value;
+    var HTMLExchangeNameList = document.getElementById("exchangeList");
+    HTMLExchangeNameList.options.length = 0;
+    var req = new XMLHttpRequest();
+    req.open("GET", "/beeServices/?function=getExchangeList&password=" +
+        password, false);
+    req.send(null);
+    if (checkPassword(req.responseText) == 1)
+    {}
+    else
+    {
+        var APIResponseJSON = req.responseText;
+        var exchangeNameList = JSON.parse(APIResponseJSON).sort();
+        checkPassword(req.responseText)
+        for (var exchangeIndex = 0; exchangeIndex < exchangeNameList.length; exchangeIndex++)
+        {
+            currentOption = document.createElement("option");
+            currentOption.text = exchangeNameList[exchangeIndex];
+            currentOption.value = exchangeNameList[exchangeIndex];
+            HTMLExchangeNameList.add(currentOption);
+        }
+        HTMLExchangeNameList.size = HTMLExchangeNameList.options.length / 2;
+    }
+}
+
+function updateProfile()
+{
+    var password = document.getElementById("password").value;
+    var HTMLExchangeNameList = document.getElementById("exchangeList");
+    var HTMLProfileNameList = document.getElementById("profileNameList");
+    var returnProfileObject = {};
+    returnProfileObject.exchangeList = [];
+    returnProfileObject.depthList = [];
+    // Contruct object to return to API from screen values
+    returnProfileObject.depthList = document.getElementById("depthText").value
+        .split(' ').join('').split(",");
+    returnProfileObject.frequencyMins = document.getElementById(
+        "frequencyMins").value;
+    returnProfileObject.lastRunTime = document.getElementById("lastRunTime")
+        .value;
+    returnProfileObject.active = document.getElementById("active").checked;
+    returnProfileObject.profileName = document.getElementById("profileName")
+        .value;
+    // Save all of the highlighted excahanges to the object to retunr to the API
+    for (var excahangeIndex = 0; excahangeIndex < HTMLExchangeNameList.options
+        .length; excahangeIndex++)
+    {
+        if (document.getElementById("exchangeList").options[excahangeIndex]
+            .selected)
+        {
+            returnProfileObject.exchangeList.push(HTMLExchangeNameList.options[
+                excahangeIndex].value);
+        }
+    }
+    // Convert the (now populated) profile object to JSON and send it to the backend API. i.e. save it.
+    var returnProfileJSON = JSON.stringify(returnProfileObject);
+    var req = new XMLHttpRequest();
+    req.open("GET", "/beeServices/?function=updateProfile&profileDetails=" +
+        returnProfileJSON + "&password=" + password, false);
+    req.send(null);
+    if (checkPassword(req.responseText) == 1)
+    {}
+    else
+    {
+        // if new profile, add to profileNameList
+        var inListBool = false;
+        for (var profileIndex = 0; profileIndex < HTMLProfileNameList.options
+            .length; profileIndex++)
+        {
+            if (HTMLProfileNameList.options[profileIndex].value == document
+                .getElementById("profileName").value)
+            {
+                inListBool = true;
+            }
+        }
+        // Now display it in the profileList
+        if (inListBool == false)
+        {
+            var newOption = document.createElement("option");
+            newOption.text = document.getElementById("profileName").value;
+            newOption.value = document.getElementById("profileName").value;
+            HTMLProfileNameList.add(newOption);
+        }
+    }
+}
+
+function getExchangeDetails()
+{
+    var password = document.getElementById("password").value;
+    var HTMLExchangeNameList = document.getElementById("exchangeList");
+    var HTMLExchangeOrderbookButton = document.getElementById(
+        "showExchangeOrderbookButton");
+    var HTMLexchangeOrderbookLink = document.getElementById("exchangeURL");
+    if (HTMLExchangeNameList.selectedIndex != -1)
+    {
+        var req = new XMLHttpRequest();
+        req.open("GET",
+            "/beeServices/?function=getExchangeDetails&exchangeName=" +
+            HTMLExchangeNameList.options[HTMLExchangeNameList.selectedIndex]
+            .value + "&password=" + password, false);
+        req.send(null);
+        if (checkPassword(req.responseText) == 1)
+        {}
+        else
+        {
+            var APIResponseJSON = req.responseText;
+            var exchangeDetailsObject = JSON.parse(APIResponseJSON);
+            HTMLexchangeOrderbookLink.href = exchangeDetailsObject.exchangeURL;
+            HTMLExchangeOrderbookButton.title =
+                "Show the selected exchange's orderbook";
+        }
+    }
+    else
+    {
+        HTMLexchangeOrderbookLink.href = "javascript:void(0)";
+        HTMLExchangeOrderbookButton.title = "Please select one exchange";
+    }
+}
+
+function getProfileDetails()
+{
+    var password = document.getElementById("password").value;
+    HTMLStatsList = document.getElementById("statsList");
+    HTMLStatsList.innerHTML = "";
+    var HTMLProfileNameList = document.getElementById("profileNameList");
+    var HTMLExchangeNameList = document.getElementById("exchangeList");
+    var HTMLoutPutFileLink = document.getElementById("fileLink");
+    var HTMLdepthField = document.getElementById("depthText");
+    var HTMLProfileName = document.getElementById("profileName");
+    var req = new XMLHttpRequest();
+    req.open("GET", "/beeServices/?function=getProfileDetails&profileName=" +
+        HTMLProfileNameList.options[HTMLProfileNameList.selectedIndex].value +
+        "&password=" + password, false);
+    req.send(null);
+    if (checkPassword(req.responseText) == 1)
+    {}
+    else
+    {
+        var APIResponseJSON = req.responseText;
+        var profileDetailsObject = JSON.parse(APIResponseJSON);
+        document.getElementById("profileName").value = profileDetailsObject
+            .profileName;
+        document.getElementById("frequencyMins").value =
+            profileDetailsObject.frequencyMins;
+        document.getElementById("active").checked = (profileDetailsObject.active ==
+            true);
+        document.getElementById("fileName").value = "bee_" +
+            profileDetailsObject.profileName + ".txt";
+        document.getElementById("lastRunTime").value = profileDetailsObject
+            .lastRunTime;
+        // Highlight the exchanges for this profile (i.e. 'select' the exchange items in the select list)
+        for (var exchangeIndex = 0; exchangeIndex < HTMLExchangeNameList.options
+            .length; exchangeIndex++)
+        {
+            if (profileDetailsObject.exchangeList.indexOf(
+                    HTMLExchangeNameList.options[exchangeIndex].value) in
+                profileDetailsObject.exchangeList)
+            {
+                HTMLExchangeNameList.options[exchangeIndex].selected = true;
+            }
+            else
+            {
+                HTMLExchangeNameList.options[exchangeIndex].selected =
+                    false;
+            }
+        }
+        // Display the list of depths - as a CSV list (to make our life easy for the time being)
+        var depthList = profileDetailsObject.depthList;
+        depthCSV = depthList.join(", ");
+        HTMLdepthField.value = depthCSV;
+        HTMLoutPutFileLink.href =
+            "/beeServices/?function=getProfileTextFile&profileName=" +
+            HTMLProfileName.value;
+    }
+}
+
+function clearScreen()
+{
+    document.getElementById("profileNameList").options.length = 0;
+    document.getElementById("exchangeList").options.length = 0;
+    document.getElementById("profileName").value = '';
+    document.getElementById("frequencyMins").value = '';
+    document.getElementById("active").checked = false;
+    document.getElementById("fileName").value = '';
+    document.getElementById("depthText").value = '';
+    document.getElementById("lastRunTime").value = '';
+    document.getElementById("statsList").innerHTML = "";
+    setupPage();
+}
+
+function deleteProfile()
+{
+    var password = document.getElementById("password").value;
+    var HTMLProfileName = document.getElementById("profileName");
+    selectedProfileName = HTMLProfileName.value;
+    confirmDeleteBool = confirm(
+        'Are you sure that you want to delete the profile "' +
+        selectedProfileName + '" ?');
+    console.log(confirmDeleteBool);
+    if (confirmDeleteBool == true)
+    {
+        var req = new XMLHttpRequest();
+        req.open("GET", "/beeServices/?function=deleteProfile&profileName=" +
+            selectedProfileName + "&password=" + password, false);
+        req.send(null);
+        checkPassword(req.responseText);
+        clearScreen();
+    }
+}
+
+function getProfileStats()
+{
+    var password = document.getElementById("password").value;
+    updateProfile();
+    var HTMLProfileName = document.getElementById("profileName");
+    var HTMLStatsList = document.getElementById("statsList");
+    selectedProfileName = HTMLProfileName.value; // then get the value. i.e. the currently-selected profileName.
+    var req = new XMLHttpRequest();
+    req.open("GET",
+        "/beeServices/?function=getProfileStatsText&profileName=" +
+        selectedProfileName + "&password=" + password, false);
+    req.send(null);
+    if (checkPassword(req.responseText) == 1)
+    {}
+    else
+    {
+        var statsListASCI = req.responseText;
+        HTMLStatsList.innerHTML = statsListASCI;
+    }
+}
+
+function setupPage()
+{
+    document.getElementById("password").style.display = "none";
+    document.getElementById("login").style.display = "none";
+    getProfileNameList(); // Refresh profile name list
+    getExchangeList(); // Refresh exchange list 
+}
