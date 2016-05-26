@@ -150,7 +150,9 @@ def getOrderBookStatsList(bidsAndAsks, depthList):
                 break
 
     # If we didn't find enough asks, append False entries to pricesAtAskDepths[]
+#   print("compare: " + str((len(pricesAtAskDepths) < len(depthList))) + str(len(pricesAtAskDepths)) + " " + str(len(depthList)))
     if len(pricesAtAskDepths) < len(depthList):
+#        print("appended it!")
         maxOutError.append("asks have been maxed out")
         
     while len(pricesAtAskDepths) < len(depthList):
@@ -172,7 +174,7 @@ def getOrderBookStatsList(bidsAndAsks, depthList):
         if (isinstance(pricesAtBidDepths[depthListIndex],float) and isinstance(bid1000Price,float)):  # Check is is an float, and not 'False'
             depthRatios.append(round((bid1000Price - pricesAtBidDepths[depthListIndex]) / bid1000Price,3))
         else:
-            depthRatios.append('False')
+            depthRatios.append('No Data')
 
         depthListIndex = depthListIndex + 1
 
