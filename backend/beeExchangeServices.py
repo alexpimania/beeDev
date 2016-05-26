@@ -49,7 +49,7 @@ def getOrderBook(exchangeList):
     mergedOrderBook[0] = sorted(mergedOrderBook[0], key = lambda  x: x[0])[::-1] # Sorts bids according to price - in REVERSE
     mergedOrderBook[1] = sorted(mergedOrderBook[1], key = lambda  x: x[0]) # Sorts asks according to price.
     if failedExchanges:
-        failedExchangesEnv = "Exchanges that are down: (" + " | ".join(failedExchanges) + ")"
+        failedExchanges = "Exchanges that are down: (" + " | ".join(failedExchanges) + ")"
 
     return [mergedOrderBook, failedExchanges]
 
@@ -150,7 +150,7 @@ def getOrderBookStatsList(bidsAndAsks, depthList):
                 break
 
     # If we didn't find enough asks, append False entries to pricesAtAskDepths[]
-    if len(pricesAtBidDepths) < len(depthList):
+    if len(pricesAtAskDepths) < len(depthList):
         maxOutError.append("asks have been maxed out")
         
     while len(pricesAtAskDepths) < len(depthList):
