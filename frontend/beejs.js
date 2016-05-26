@@ -9,6 +9,7 @@ function checkPassword(response)
     }
     else
     {
+        HTMLLLoginDiv.style.display = "none";
         document.getElementById("status").innerHTML = "<span style='color: green'>Valid Access Code</span>";
         return 0;
     }
@@ -310,19 +311,21 @@ function deleteProfile()
     var HTMLpassword = document.getElementById("password");
     var HTMLProfileName = document.getElementById("profileName");
     selectedProfileName = HTMLProfileName.value;
-    confirmDeleteBool = confirm('Are you sure that you want to delete the profile "' + selectedProfileName + '" ?');
+    confirmDeleteBool = confirm('Any log file for this profile will also be deleted. Are you sure you want to delete the profile "' + selectedProfileName + '" ?');
     if (confirmDeleteBool == true)
     {
         var req = new XMLHttpRequest();
         req.onreadystatechange = function() {
-            if (req.readystate == 4 && req.status == 200)
+            if (req.readyState == 4 && req.status == 200)
             {
                 checkPassword(req.responseText);
                 clearScreen();
+                getProfileNameList();
             }
-        }
+        };
         req.open("POST", "/beeServices/", true);
         req.send("function=deleteProfile&profileName=" + selectedProfileName + "&password=" + HTMLpassword.value);
+        
     }
 }
 
