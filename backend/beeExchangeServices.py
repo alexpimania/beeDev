@@ -48,8 +48,10 @@ def getOrderBook(exchangeList):
 
     mergedOrderBook[0] = sorted(mergedOrderBook[0], key = lambda  x: x[0])[::-1] # Sorts bids according to price - in REVERSE
     mergedOrderBook[1] = sorted(mergedOrderBook[1], key = lambda  x: x[0]) # Sorts asks according to price.
+    if failedExchanges:
+        failedExchanges = "Exchanges that are down: (" + " | ".join(failedExchanges) + ")"
 
-    return [mergedOrderBook, "Exchanges that are down: (" + " | ".join(failedExchanges) + ")"]
+    return [mergedOrderBook, failedExchanges]
 
 
 def getOrderBookStatsList(bidsAndAsks, depthList):
@@ -62,6 +64,7 @@ def getOrderBookStatsList(bidsAndAsks, depthList):
     # - list of bid 'ratios' for each entry in depthList 
     bidDepth = 0
     bidsFiatTotal = 0
+    maxOutError = []
     
     # Calc total of Amounts of bids for orderbook
     for bidOrder in bidsAndAsks[0]:
@@ -110,7 +113,10 @@ def getOrderBookStatsList(bidsAndAsks, depthList):
                 
 
     # If we didn't find enough bids, append False entries to pricesAtBidDepths[]
-    while len(pricesAtBidDepths) < len(depthList):
+    if len(pricesAtBidDepths) < len(depthList):
+        maxOutError.append("bids have been maxed out")
+        
+    while len(pricesAtBidDepths) < len(depthList):       
         try:
             pricesAtBidDepths.append(round(accumulatedBidFiat / accumulatedBidAmount,2))
         except:
@@ -144,6 +150,9 @@ def getOrderBookStatsList(bidsAndAsks, depthList):
                 break
 
     # If we didn't find enough asks, append False entries to pricesAtAskDepths[]
+    if len(pricesAtBidDepths) < len(depthList):
+        maxOutError.append("asks have been maxed out")
+        
     while len(pricesAtAskDepths) < len(depthList):
         try:
             pricesAtAskDepths.append(round(accumulatedBidFiat / accumulatedBidAmount,2))
@@ -168,7 +177,7 @@ def getOrderBookStatsList(bidsAndAsks, depthList):
         depthListIndex = depthListIndex + 1
 
 
-    return [bidsFiatTotal, asksBTCTotal, pricesAtBidDepths, pricesAtAskDepths, depthRatios]
+    return [[bidsFiatTotal, asksBTCTotal, pricesAtBidDepths, pricesAtAskDepths, depthRatios], " and ".join(maxOutError)]
 
 
 def getBid1000Price(bidsAndAsks):
@@ -600,7 +609,7 @@ def generateOutput(profileName):
             orderBook, failedExchanges = getOrderBook(aProfile["exchangeList"])
 
             # Get the stats
-            statsList = getOrderBookStatsList(orderBook, aProfile["depthList"])
+            statsList, maxOutError = getOrderBookStatsList(orderBook, aProfile["depthList"])
             # Returns:
             # - bidsFiatTotal
             # - asksBTCTotal
@@ -608,7 +617,12 @@ def generateOutput(profileName):
             # - list of pricesAtAskDepths,
             # - list of bid 'ratios' for each entry in depthList 
 
-            outputLine = constructProfileStatsTextLine(statsList) + failedExchanges + "\n"
+            outputLine = constructProfileStatsTextLine(statsList) + failedExchanges
+            if maxOutError:
+                outputLine += maxOutError + "\n"
+            else:
+                outputLine += "\n"
+            
 
 
             # Check the logfile directory exists. If not create it.
@@ -654,7 +668,7 @@ def getProfileStats(profileName):
         # Found matching profile - so get the orderbook, generate the stats, then return the stats in JSON.
             orderBook, failedExchanges = getOrderBook(aProfile["exchangeList"])
             # Get the stats
-            statsList = getOrderBookStatsList(orderBook, aProfile["depthList"])
+            statsList, maxOutError = getOrderBookStatsList(orderBook, aProfile["depthList"])
             # Returns:
             # - bidsFiatTotal
             # - asksBTCTotal
@@ -685,7 +699,7 @@ def getProfileStatsText(profileName):
             orderBook, failedExchanges = getOrderBook(aProfile["exchangeList"])
 
             # Get the stats
-            statsList = getOrderBookStatsList(orderBook, aProfile["depthList"])
+            statsList, maxOutError = getOrderBookStatsList(orderBook, aProfile["depthList"])
             # Returns:
             # - bidsFiatTotal
             # - asksBTCTotal
@@ -696,8 +710,13 @@ def getProfileStatsText(profileName):
             headerText = constructProfileStatsTextHeader(aProfile)
             lineText   = constructProfileStatsTextLine(statsList) 
             outputLine = headerText + lineText
+            
             if failedExchanges:
-                outputLine += failedExchanges + "\n"
+                outputLine += failedExchanges
+            if maxOutError:
+                outputLine += maxOutError + "\n"
+            else:
+                outputLine += "\n"
             return outputLine
             
 
