@@ -14,11 +14,13 @@
 <br>
 <div id="status"></div>
 <br>
-<label>Bee Access Code</label>
-<br>
-<input id="password" type="password">
-<br>
-<button id="login" onclick="setupPage()">Login to Bee</button>
+<div id="loginDiv">
+    <label>Bee Access Code</label>
+    <br>
+    <input id="password" type="password">
+    <br>
+    <button onclick="setupPage()">Login to Bee</button>
+</div>
 <label>Profile List</label><br>
 <select   id="profileNameList" onchange="getProfileDetails()" multiple></select>
 <br>
@@ -55,4 +57,3 @@
 </a>
 </div>
 </body>
-
