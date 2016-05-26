@@ -1,11 +1,9 @@
 function checkPassword(response)
 {
-    HTMLPassword = document.getElementById("password");
-    HTMLLLogin = document.getElementById("login");
+    HTMLLLoginDiv = document.getElementById("loginDiv");
     if (response === "Invalid Password")
     {
-        HTMLPassword.style.display = "block";
-        HTMLLLogin.style.display = "block";
+        HTMLLLoginDiv.style.display = "block";
         document.getElementById("status").innerHTML = "<span style='color: red'>Invalid Access Code</span>";
         return 1;
     }
@@ -200,6 +198,7 @@ function updateProfile()
                     newOption.value = HTMLProfileName.value;
                     HTMLProfileNameList.add(newOption);
                 }
+                getProfileNameList();
             }
         }
     }
@@ -352,15 +351,15 @@ function getProfileStats()
 function setupPage()
 {
     HTMLPassword = document.getElementById("password");
-    HTMLLLogin = document.getElementById("login");
+    HTMLLoginDev = document.getElementById("loginDiv");
+    
     var req = new XMLHttpRequest();
     req.onreadystatechange = function() {
         if (req.readyState == 4 && req.status == 200)
         {
             if (checkPassword(req.responseText) == 0)
             {
-                HTMLPassword.style.display = "none";
-                HTMLLLogin.style.display = "none";
+                HTMLLoginDev.style.display = "none";
                 getProfileNameList();
                 getExchangeList(); 
             }
