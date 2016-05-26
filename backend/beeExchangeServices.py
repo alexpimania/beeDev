@@ -19,7 +19,7 @@ BEE_PATH = sys.argv[1]  # this argument is passed in by the calling script and w
 def getOrderBook(exchangeList):
     # Gets orderBooks for specified exchanges - as specified in the input exchangeList
     # Returns a merged orderbook.
-    
+    failedExchanges = []
     mergedOrderBook = [[],[]]
 
     def orderBookMerger(mergedOrderBook, newOrderBook): # Appends two order books
@@ -49,7 +49,7 @@ def getOrderBook(exchangeList):
     mergedOrderBook[0] = sorted(mergedOrderBook[0], key = lambda  x: x[0])[::-1] # Sorts bids according to price - in REVERSE
     mergedOrderBook[1] = sorted(mergedOrderBook[1], key = lambda  x: x[0]) # Sorts asks according to price.
 
-    return [mergedOrderBook, ", ".join(failedExchanges)]
+    return [mergedOrderBook, "Exchanges that are down: (" + " | ".join(failedExchanges) + ")"]
 
 
 def getOrderBookStatsList(bidsAndAsks, depthList):
@@ -60,7 +60,6 @@ def getOrderBookStatsList(bidsAndAsks, depthList):
     # - list of pricesAtBidDepths,
     # - list of pricesAtAskDepths,
     # - list of bid 'ratios' for each entry in depthList 
-
     bidDepth = 0
     bidsFiatTotal = 0
     
@@ -108,18 +107,21 @@ def getOrderBookStatsList(bidsAndAsks, depthList):
             # Leave the FOR loop if we've exhausted the list of depthList entries
             if depthListIndex == len(depthList):
                 break
+                
 
     # If we didn't find enough bids, append False entries to pricesAtBidDepths[]
-
     while len(pricesAtBidDepths) < len(depthList):
-        pricesAtBidDepths.append(round(accumulatedBidFiat / accumulatedBidAmount,2))
-        
+        try:
+            pricesAtBidDepths.append(round(accumulatedBidFiat / accumulatedBidAmount,2))
+        except:
+            pricesAtBidDepths.append("Zero dev err")
+            
+
     # Now setup for getting the prices at all ask depths.
     depthListIndex = 0
     accumulatedAskAmount = 0
     accumulatedAskFiat = 0
     pricesAtAskDepths = []
-    
     # Step through the asks
     for askOrder in bidsAndAsks[1]:
         
@@ -140,10 +142,13 @@ def getOrderBookStatsList(bidsAndAsks, depthList):
             # If we've exhausted the list of depthList entries, leave the FOR loop 
             if depthListIndex == len(depthList):
                 break
-    
+
     # If we didn't find enough asks, append False entries to pricesAtAskDepths[]
     while len(pricesAtAskDepths) < len(depthList):
-        pricesAtBidDepths.append(round(accumulatedBidFiat / accumulatedBidAmount,2))
+        try:
+            pricesAtAskDepths.append(round(accumulatedBidFiat / accumulatedBidAmount,2))
+        except:
+            pricesAtAskDepths.append("Zero dev err")
 
 
     # Now setup for getting the bid 'ratios' for all entries in depthList.
@@ -206,29 +211,6 @@ def getBid1000Price(bidsAndAsks):
     # Ah, we didn't find enough bids. Return 'False' 
     return "False"    
 
-def whichExchangeIsDown(exchangeList):
-    failedExchanges = []
-    # Given a list of exchanges, determines which exchange is experiencing an outage.
-    
-    with open(BEE_PATH + "/backend" + "/beeExchangeList.ini") as beeExchangeListFile:
-        allExchanges = json.loads(beeExchangeListFile.read())
-    
-    # Step through all exchanges and match the ones of listed in exchangeList. i.e. ignore those not in the exchange list.
-    for exchange in allExchanges:
-        
-        # If this exchange is in the exchange list, then TRY get to the orderbook
-        if exchange["exchangeName"] in exchangeList:
-
-            # run the orderbook load routine for this type of exchange 
-            try:
-                # (we don't want to keep the orderbook, we just want to test to see if we can get it.)
-                dummyOrderBook = eval("orderBookLoad" + str(exchange["exchangeType"]))(str(exchange["exchangeURL"]))
-            except:
-                failedExchanges.append(exchange["exchangeName"] + ", URL=" + str(exchange["exchangeURL"]))
-    if failedExchanges:
-        return failedExchanges  
-    else:                                                     
-        return "(unable to determine failed exchange.)"       
 
 
 #####################################################################################
@@ -626,7 +608,7 @@ def generateOutput(profileName):
             # - list of pricesAtAskDepths,
             # - list of bid 'ratios' for each entry in depthList 
 
-            outputLine = constructProfileStatsTextLine(statsList)
+            outputLine = constructProfileStatsTextLine(statsList) + failedExchanges + "\n"
 
 
             # Check the logfile directory exists. If not create it.
@@ -661,8 +643,6 @@ def getProfileStats(profileName):
     # for a specified profileName, returns JSON stats.
     # Typically used by the UI to retrieve and display the JSON stats.
     # If you want a CSV output, use getProfileStatsText instead.
-
-    anExchangeWasDown = False
     
     # Load all the profiles 
     iniProfiles = json.loads(open(BEE_PATH + "/backend" + '/beeProfileList.ini').read())
@@ -672,7 +652,7 @@ def getProfileStats(profileName):
         if aProfile["profileName"] == profileName:
 
         # Found matching profile - so get the orderbook, generate the stats, then return the stats in JSON.
-            orderBook, failedExchnanges = getOrderBook(aProfile["exchangeList"])
+            orderBook, failedExchanges = getOrderBook(aProfile["exchangeList"])
             # Get the stats
             statsList = getOrderBookStatsList(orderBook, aProfile["depthList"])
             # Returns:
@@ -702,7 +682,7 @@ def getProfileStatsText(profileName):
 
             # Found matching profile - so get the orderbook, generate the stats, then return the stats in JSON.
 
-            failedExchanges, orderBook = getOrderBook(aProfile["exchangeList"])
+            orderBook, failedExchanges = getOrderBook(aProfile["exchangeList"])
 
             # Get the stats
             statsList = getOrderBookStatsList(orderBook, aProfile["depthList"])
@@ -717,7 +697,7 @@ def getProfileStatsText(profileName):
             lineText   = constructProfileStatsTextLine(statsList) 
             outputLine = headerText + lineText
             if failedExchanges:
-                outputLine += failedExchanges
+                outputLine += failedExchanges + "\n"
             return outputLine
             
 
@@ -734,7 +714,7 @@ def constructProfileStatsTextHeader(aProfile):
     #
     #    GMT, Bid Total Fiat, Ask Total BTC, Bid10, Ask10, Bid100, Ask100, Bid1000, Ask1000, Bid10000, Ask10000, Bid100000, Ask100000, 
     
-    theOutput = theOutput + "GMT, Bid Total Fiat, Ask Total BTC, "
+    theOutput = "GMT, Bid Total Fiat, Ask Total BTC, "
 
     # Write out the list of depths labels for this profile.
     for depth in aProfile["depthList"]:
@@ -778,8 +758,6 @@ def constructProfileStatsTextLine(statsList):
         
         depthCounter = depthCounter + 1
   
-
-    outputLine = outputLine + "\n"
 
     return outputLine
 
@@ -853,5 +831,5 @@ def getExchangeDetails(exchangeName):
         if exchange["exchangeName"] == exchangeName:
             return json.dumps(exchange, sort_keys=False, indent=4)
 
-    # If didn't find exchnageName, return error.
+    # If didn't find exchangeName, return error.
     return "Not found"
