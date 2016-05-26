@@ -37,11 +37,11 @@ def getOrderBook(exchangeList):
         if exchange["exchangeName"] in exchangeList:
 
             # run the orderbook load routine for this type of exchange 
-##            try:
-##                newOrderBook = eval("orderBookLoad" + str(exchange["exchangeType"]))(str(exchange["exchangeURL"]))
-##            except:
-##                newOrderBook = [[],[]] # if the data download from the exchange failed, just add nothing!
-            newOrderBook = eval("orderBookLoad" + str(exchange["exchangeType"]))(str(exchange["exchangeURL"]))
+            try:
+                newOrderBook = eval("orderBookLoad" + str(exchange["exchangeType"]))(str(exchange["exchangeURL"]))
+            except:
+                newOrderBook = [[],[]] # if the data download from the exchange failed, just add nothing!
+                failedExchanges.append(exchange["exchangeName"])
 
             # Now merge the new orderbook with our accumulated orderbook
             mergedOrderBook = orderBookMerger(mergedOrderBook, newOrderBook) # merge the accumulated orderBook with the new orderrbook from this iteration's exchange.
@@ -49,7 +49,7 @@ def getOrderBook(exchangeList):
     mergedOrderBook[0] = sorted(mergedOrderBook[0], key = lambda  x: x[0])[::-1] # Sorts bids according to price - in REVERSE
     mergedOrderBook[1] = sorted(mergedOrderBook[1], key = lambda  x: x[0]) # Sorts asks according to price.
 
-    return mergedOrderBook
+    return [mergedOrderBook, ", ".join(failedExchanges)]
 
 
 def getOrderBookStatsList(bidsAndAsks, depthList):
@@ -112,7 +112,7 @@ def getOrderBookStatsList(bidsAndAsks, depthList):
     # If we didn't find enough bids, append False entries to pricesAtBidDepths[]
 
     while len(pricesAtBidDepths) < len(depthList):
-        pricesAtBidDepths.append("False")
+        pricesAtBidDepths.append(round(accumulatedBidFiat / accumulatedBidAmount,2))
         
     # Now setup for getting the prices at all ask depths.
     depthListIndex = 0
@@ -143,7 +143,7 @@ def getOrderBookStatsList(bidsAndAsks, depthList):
     
     # If we didn't find enough asks, append False entries to pricesAtAskDepths[]
     while len(pricesAtAskDepths) < len(depthList):
-        pricesAtAskDepths.append("False")
+        pricesAtBidDepths.append(round(accumulatedBidFiat / accumulatedBidAmount,2))
 
 
     # Now setup for getting the bid 'ratios' for all entries in depthList.
@@ -156,7 +156,7 @@ def getOrderBookStatsList(bidsAndAsks, depthList):
     # Calculate bid 'ratios'   i.e. (1k-nk)/1k for each depth
     for aDepth in depthList:
         if (isinstance(pricesAtBidDepths[depthListIndex],float) and isinstance(bid1000Price,float)):  # Check is is an float, and not 'False'
-            depthRatios.append(round(((bid1000Price - pricesAtBidDepths[depthListIndex]) / bid1000Price),3))
+            depthRatios.append(round((bid1000Price - pricesAtBidDepths[depthListIndex]) / bid1000Price,3))
         else:
             depthRatios.append('False')
 
@@ -207,6 +207,7 @@ def getBid1000Price(bidsAndAsks):
     return "False"    
 
 def whichExchangeIsDown(exchangeList):
+    failedExchanges = []
     # Given a list of exchanges, determines which exchange is experiencing an outage.
     
     with open(BEE_PATH + "/backend" + "/beeExchangeList.ini") as beeExchangeListFile:
@@ -223,9 +224,11 @@ def whichExchangeIsDown(exchangeList):
                 # (we don't want to keep the orderbook, we just want to test to see if we can get it.)
                 dummyOrderBook = eval("orderBookLoad" + str(exchange["exchangeType"]))(str(exchange["exchangeURL"]))
             except:
-                return exchange["exchangeName"] + ", URL=" + str(exchange["exchangeURL"])
-                                                               
-    return "(unable to determine failed exchange.)"       
+                failedExchanges.append(exchange["exchangeName"] + ", URL=" + str(exchange["exchangeURL"]))
+    if failedExchanges:
+        return failedExchanges  
+    else:                                                     
+        return "(unable to determine failed exchange.)"       
 
 
 #####################################################################################
@@ -535,20 +538,13 @@ def updateProfile(profileDetailsJSON):
     # otherwise creates a new profile with profileDetailsJSON.
    
     import json #Import module that has the ability to encode and decode Json
-    import re
-
-    # This is used to sort a list of strings in numeric order - for depthList
-    def stringSplitByNumbers(x):
-        r = re.compile('(\d+)')
-        l = r.split(x)
-        return [int(y) if y.isdigit() else y for y in l]
 
     iniProfiles = json.loads(open(BEE_PATH + "/backend" + '/beeProfileList.ini').read())
 
     profileDetails = json.loads(profileDetailsJSON) # Convert to dict object
 
     # Ensure the depthlist entries are sorted numerically
-    sortedDepthList = sorted(profileDetails["depthList"], key = stringSplitByNumbers)
+    sortedDepthList = sorted(profileDetails["depthList"], key = lambda x: int(x))
     profileDetails["depthList"] = sortedDepthList     
     
     profileIndex = 0
@@ -609,8 +605,6 @@ def generateOutput(profileName):
     # (This functions runs getOrderBook, and therefore takes a while.
 
     from datetime import datetime # To access GMT time
-
-    anExchangeWasDown = False
     
     # Load all the profiles 
     iniProfiles = json.loads(open(BEE_PATH + "/backend" + '/beeProfileList.ini').read())
@@ -620,24 +614,19 @@ def generateOutput(profileName):
         if aProfile["profileName"] == profileName:
 
             # Found matching profile - so get the orderbook, generate the stats, write a new line to the output file then return.
-            try:
-                orderBook = getOrderBook(aProfile["exchangeList"])
-            except:
-                anExchangeWasDown = True
+            
+            orderBook, failedExchanges = getOrderBook(aProfile["exchangeList"])
 
-            if anExchangeWasDown:
-                outputLine = getGMTime() + ', An exchange was down. This profile is being skipped. Failed exchange = ' + whichExchangeIsDown(aProfile["exchangeList"]) + '\n'
-            else:
-                # Get the stats
-                statsList = getOrderBookStatsList(orderBook, aProfile["depthList"])
-                # Returns:
-                # - bidsFiatTotal
-                # - asksBTCTotal
-                # - list of pricesAtBidDepths,
-                # - list of pricesAtAskDepths,
-                # - list of bid 'ratios' for each entry in depthList 
+            # Get the stats
+            statsList = getOrderBookStatsList(orderBook, aProfile["depthList"])
+            # Returns:
+            # - bidsFiatTotal
+            # - asksBTCTotal
+            # - list of pricesAtBidDepths,
+            # - list of pricesAtAskDepths,
+            # - list of bid 'ratios' for each entry in depthList 
 
-                outputLine = constructProfileStatsTextLine(statsList)
+            outputLine = constructProfileStatsTextLine(statsList)
 
 
             # Check the logfile directory exists. If not create it.
@@ -658,7 +647,6 @@ def generateOutput(profileName):
             if not os.path.exists(outFilename):
                 with open(outFilename , 'w') as outf:
                     outf.write(constructProfileStatsTextHeader(aProfile))
-                    outf.close()
             
             # Append the generated bid and ask prices to end of the output file.  i.e write the line    
             with open(outFilename , 'a') as outf:
@@ -683,25 +671,18 @@ def getProfileStats(profileName):
     for aProfile in iniProfiles:
         if aProfile["profileName"] == profileName:
 
-            # Found matching profile - so get the orderbook, generate the stats, then return the stats in JSON.
-            try:
-                orderBook = getOrderBook(aProfile["exchangeList"])
-            except:
-                anExchangeWasDown = True
+        # Found matching profile - so get the orderbook, generate the stats, then return the stats in JSON.
+            orderBook, failedExchnanges = getOrderBook(aProfile["exchangeList"])
+            # Get the stats
+            statsList = getOrderBookStatsList(orderBook, aProfile["depthList"])
+            # Returns:
+            # - bidsFiatTotal
+            # - asksBTCTotal
+            # - list of pricesAtBidDepths,
+            # - list of pricesAtAskDepths,
+            # - list of bid 'ratios' for each entry in depthList 
 
-            if anExchangeWasDown:
-                return getGMTime() + ', An exchange was down. This profile is being skipped. Failed exchange = ' + whichExchangeIsDown(aProfile["exchangeList"]) + '\n'
-            else:
-                # Get the stats
-                statsList = getOrderBookStatsList(orderBook, aProfile["depthList"])
-                # Returns:
-                # - bidsFiatTotal
-                # - asksBTCTotal
-                # - list of pricesAtBidDepths,
-                # - list of pricesAtAskDepths,
-                # - list of bid 'ratios' for each entry in depthList 
-
-                return json.dumps(statsList, sort_keys=False, indent=4)
+            return json.dumps(statsList, sort_keys=False, indent=4)
 
     return "Not found"
 
@@ -720,26 +701,25 @@ def getProfileStatsText(profileName):
         if aProfile["profileName"] == profileName:
 
             # Found matching profile - so get the orderbook, generate the stats, then return the stats in JSON.
-            try:
-                orderBook = getOrderBook(aProfile["exchangeList"])
-            except:
-                anExchangeWasDown = True
 
-            if anExchangeWasDown:
-                return getGMTime() + ', An exchange was down. This profile is being skipped. Failed exchange = ' + whichExchangeIsDown(aProfile["exchangeList"]) + '\n'
-            else:
-                # Get the stats
-                statsList = getOrderBookStatsList(orderBook, aProfile["depthList"])
-                # Returns:
-                # - bidsFiatTotal
-                # - asksBTCTotal
-                # - list of pricesAtBidDepths,
-                # - list of pricesAtAskDepths,
-                # - list of bid 'ratios' for each entry in depthList 
+            failedExchanges, orderBook = getOrderBook(aProfile["exchangeList"])
 
-                headerText = constructProfileStatsTextHeader(aProfile)
-                lineText   = constructProfileStatsTextLine(statsList) 
-                return headerText + lineText
+            # Get the stats
+            statsList = getOrderBookStatsList(orderBook, aProfile["depthList"])
+            # Returns:
+            # - bidsFiatTotal
+            # - asksBTCTotal
+            # - list of pricesAtBidDepths,
+            # - list of pricesAtAskDepths,
+            # - list of bid 'ratios' for each entry in depthList 
+
+            headerText = constructProfileStatsTextHeader(aProfile)
+            lineText   = constructProfileStatsTextLine(statsList) 
+            outputLine = headerText + lineText
+            if failedExchanges:
+                outputLine += failedExchanges
+            return outputLine
+            
 
     return "Not found"
 
@@ -754,12 +734,6 @@ def constructProfileStatsTextHeader(aProfile):
     #
     #    GMT, Bid Total Fiat, Ask Total BTC, Bid10, Ask10, Bid100, Ask100, Bid1000, Ask1000, Bid10000, Ask10000, Bid100000, Ask100000, 
     
-    theOutput = ("Profile: " + aProfile["profileName"] + "\nExchanges: ")
-
-    # Write out the list of exchanges for this profile
-    for exchange in aProfile["exchangeList"]:
-        theOutput = theOutput + exchange + ", "
-    theOutput = theOutput + "\n\n"
     theOutput = theOutput + "GMT, Bid Total Fiat, Ask Total BTC, "
 
     # Write out the list of depths labels for this profile.
@@ -769,7 +743,7 @@ def constructProfileStatsTextHeader(aProfile):
     for depth in aProfile["depthList"]:
         theOutput = theOutput +"BidRatio" + str(depth) + ", " 
 
-    theOutput = theOutput + "\n"
+    theOutput = theOutput + " Warnings,\n"
 
     return theOutput
 
@@ -881,4 +855,3 @@ def getExchangeDetails(exchangeName):
 
     # If didn't find exchnageName, return error.
     return "Not found"
-
