@@ -29,7 +29,7 @@ class homeHandler(tornado.web.RequestHandler):
         beePassword = open(Orig_BEE_PATH + "/backend/password.txt").read().strip()
         if self.get_argument("password", "") == beePassword:
             if self.get_argument("function", "") == "getProfileTextFile":
-                self.write(beeServices.getProfileTextFile(self.get_argument("profileName", self.get_argument("newLineChar")))) 
+                self.write(beeServices.getProfileTextFile(self.get_argument("profileName", self.get_argument("newLineChar", "<br>")))) 
         else:
             self.write("Invalid Password")
                  
