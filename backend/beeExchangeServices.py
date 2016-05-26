@@ -797,7 +797,7 @@ def getGMTime():
 def getProfileTextFile(profileName, newlinechar="<br>"):
     # Used by the UI - returns the contents of the log file (.txt) for the specified profile.
     
-    fileContents = []
+    fileContents = ""
     fileName = BEE_PATH + "/logfiles/bee_" + profileName + ".txt"
     try:
         fileContents = open(fileName).read()
