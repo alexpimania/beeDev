@@ -49,7 +49,7 @@ def getOrderBook(exchangeList):
     mergedOrderBook[0] = sorted(mergedOrderBook[0], key = lambda  x: x[0])[::-1] # Sorts bids according to price - in REVERSE
     mergedOrderBook[1] = sorted(mergedOrderBook[1], key = lambda  x: x[0]) # Sorts asks according to price.
     if failedExchanges:
-        failedExchanges = "Exchanges that are down: (" + " | ".join(failedExchanges) + ")"
+        failedExchangesEnv = "Exchanges that are down: (" + " | ".join(failedExchanges) + ")"
 
     return [mergedOrderBook, failedExchanges]
 
@@ -120,7 +120,7 @@ def getOrderBookStatsList(bidsAndAsks, depthList):
         try:
             pricesAtBidDepths.append(round(accumulatedBidFiat / accumulatedBidAmount,2))
         except:
-            pricesAtBidDepths.append("Zero dev err")
+            pricesAtBidDepths.append("No Data")
             
 
     # Now setup for getting the prices at all ask depths.
@@ -157,7 +157,7 @@ def getOrderBookStatsList(bidsAndAsks, depthList):
         try:
             pricesAtAskDepths.append(round(accumulatedBidFiat / accumulatedBidAmount,2))
         except:
-            pricesAtAskDepths.append("Zero dev err")
+            pricesAtAskDepths.append("No Data")
 
 
     # Now setup for getting the bid 'ratios' for all entries in depthList.
@@ -616,8 +616,9 @@ def generateOutput(profileName):
             # - list of pricesAtBidDepths,
             # - list of pricesAtAskDepths,
             # - list of bid 'ratios' for each entry in depthList 
-
-            outputLine = constructProfileStatsTextLine(statsList) + failedExchanges
+            outputLine = constructProfileStatsTextLine(statsList)
+            if failedExchanges:
+                outputLine += failedExchanges
             if maxOutError:
                 outputLine += maxOutError + "\n"
             else:
@@ -742,7 +743,7 @@ def constructProfileStatsTextHeader(aProfile):
     for depth in aProfile["depthList"]:
         theOutput = theOutput +"BidRatio" + str(depth) + ", " 
 
-    theOutput = theOutput + " Warnings,\n"
+    theOutput = theOutput + " Warnings,\n\n"
 
     return theOutput
 
@@ -793,14 +794,16 @@ def getGMTime():
     return str(GMTimeNoUsecs)
 
 
-def getProfileTextFile(profileName):
+def getProfileTextFile(profileName, newlinechar="<br>"):
     # Used by the UI - returns the contents of the log file (.txt) for the specified profile.
     
     fileContents = []
     fileName = BEE_PATH + "/logfiles/bee_" + profileName + ".txt"
-    with open(fileName) as f:
-        fileContents = f.read()
-        return fileContents.replace("\n", "<br>") # Replace NLs with HTML <br>
+    try:
+        fileContents = open(fileName).read()
+    except:
+        return "This file does not exist!"
+    return fileContents.replace("\n", newlinechar) # Replace NLs with HTML <br>
 
 
 def statsEngine(action):
