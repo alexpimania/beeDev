@@ -570,7 +570,7 @@ def deleteProfile(profileToDeleteName):
     # otherwise ignores and returns error "Not found".
 
     # import json #Import module that has the ability to encode and decode Json
-
+    import os
     iniProfiles = json.loads(open(BEE_PATH + "/backend" + '/beeProfileList.ini').read())
 
     profileIndex = 0
@@ -584,6 +584,10 @@ def deleteProfile(profileToDeleteName):
 
             with open(BEE_PATH + "/backend" + '/beeProfileList.ini', 'w') as outfile:
                 json.dump(iniProfiles, outfile, sort_keys = False, indent = 4, ensure_ascii = False)
+            try:
+                os.remove(BEE_PATH + "/logfiles" + "/bee_" + aProfile["profileName"] + ".txt")
+            except:
+                pass
             return "Delete"
         
         profileIndex = profileIndex + 1    
