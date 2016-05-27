@@ -320,7 +320,6 @@ function deleteProfile()
             {
                 checkPassword(req.responseText);
                 clearScreen();
-                getProfileNameList();
             }
         };
         req.open("POST", "/beeServices/", true);
