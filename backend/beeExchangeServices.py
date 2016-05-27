@@ -623,15 +623,10 @@ def generateOutput(profileName):
             # - list of pricesAtAskDepths,
             # - list of bid 'ratios' for each entry in depthList 
             outputLine = constructProfileStatsTextLine(statsList)
-            if failedExchanges:
-                outputLine += failedExchanges
-            if maxOutError:
-                outputLine += maxOutError + "\n"
-            else:
-                outputLine += "\n"
+            errorColumn = [str(error) for error in [failedExchanges, maxOutError] if error]
+            errorColumn = ["(" + " | ".join(errorColumn) + ")" if errorColumn else ""][0]
+            outputLine += errorColumn + "\n"
             
-
-
             # Check the logfile directory exists. If not create it.
             if not os.path.exists(BEE_PATH + "/logfiles"):
                 os.makedirs(BEE_PATH + "/logfiles") 
@@ -718,12 +713,10 @@ def getProfileStatsText(profileName):
             lineText   = constructProfileStatsTextLine(statsList) 
             outputLine = headerText + lineText
             
-            if failedExchanges:
-                outputLine += failedExchanges
-            if maxOutError:
-                outputLine += maxOutError + "\n"
-            else:
-                outputLine += "\n"
+            errorColumn = [str(error) for error in [failedExchanges, maxOutError] if error]
+            errorColumn = ["(" + " | ".join(errorColumn) + ")" if errorColumn else ""][0]
+            outputLine += errorColumn + "\n"
+            
             return outputLine
             
 
