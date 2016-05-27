@@ -21,12 +21,9 @@ function engineStart()
     var HTMLStatsList = document.getElementById("statsList");
     var req = new XMLHttpRequest();
     req.onreadystatechange = function() {
-        if (req.readyState == 4 && req.status == 200)
+        if (req.readyState == 4 && req.status == 200 && checkPassword(req.responseText) == 0)
         {
-            if (checkPassword(req.responseText) == 0)
-            {
-                HTMLStatsList.innerHTML = req.responseText;
-            }
+            HTMLStatsList.innerHTML = req.responseText;
         }
     }
     req.open("POST", "/beeServices/", true);
@@ -39,12 +36,9 @@ function engineStop()
     var HTMLStatsList = document.getElementById("statsList");
     var req = new XMLHttpRequest();
     req.onreadystatechange = function() {
-        if (req.readyState == 4 && req.status == 200)
+        if (req.readyState == 4 && req.status == 200 && checkPassword(req.responseText) == 0)
         {
-            if (checkPassword(req.responseText) == 0)
-            {
-                HTMLStatsList.innerHTML = req.responseText;
-            }
+            HTMLStatsList.innerHTML = req.responseText;
         }
     }
     req.open("POST", "/beeServices/", true);
@@ -57,12 +51,9 @@ function engineCheck()
     var HTMLStatsList = document.getElementById("statsList");
     var req = new XMLHttpRequest();
     req.onreadystatechange = function() {
-        if (req.readyState == 4 && req.status == 200)
+        if (req.readyState == 4 && req.status == 200 && checkPassword(req.responseText) == 0)
         {
-            if (checkPassword(req.responseText) == 0)
-            {
-                HTMLStatsList.innerHTML = req.responseText;
-            }
+            HTMLStatsList.innerHTML = req.responseText;
         }
     }
     req.open("POST", "/beeServices/", true);
@@ -71,34 +62,31 @@ function engineCheck()
 
 function getProfileNameList()
 {
-    var HTMLpassword = document.getElementById("password")
+    var HTMLpassword = document.getElementById("password");
     var HTMLProfileNameList = document.getElementById("profileNameList");
     HTMLProfileNameList.options.length = 0;
     var req = new XMLHttpRequest();
     req.onreadystatechange = function() {
-        if (req.readyState == 4 && req.status == 200)
+        if (req.readyState == 4 && req.status == 200 && checkPassword(req.responseText) == 0)
         {
-            if (checkPassword(req.responseText) == 0)
+            var APIResponseJSON = req.responseText;
+            var profileNameList = JSON.parse(APIResponseJSON).sort();
+            for (var profileIndex = 0; profileIndex < profileNameList.length; profileIndex++)
             {
-                var APIResponseJSON = req.responseText;
-                var profileNameList = JSON.parse(APIResponseJSON).sort();
-                for (var profileIndex = 0; profileIndex < profileNameList.length; profileIndex++)
-                {
-                    currentOption = document.createElement("option");
-                    currentOption.text = profileNameList[profileIndex];
-                    currentOption.value = profileNameList[profileIndex];
-                    HTMLProfileNameList.add(currentOption);
-                }
-                
-                var profileNameListSize = HTMLProfileNameList.options.length / 2;
-                if (profileNameListSize < 12)
-                {
-                    HTMLProfileNameList.size = profileNameListSize;
-                }
-                else
-                {
-                    HTMLProfileNameList.size = 12;
-                }
+                currentOption = document.createElement("option");
+                currentOption.text = profileNameList[profileIndex];
+                currentOption.value = profileNameList[profileIndex];
+                HTMLProfileNameList.add(currentOption);
+            }
+            
+            var profileNameListSize = HTMLProfileNameList.options.length / 2;
+            if (profileNameListSize < 12)
+            {
+                HTMLProfileNameList.size = profileNameListSize;
+            }
+            else
+            {
+                HTMLProfileNameList.size = 12;
             }
         }
     
@@ -114,29 +102,26 @@ function getExchangeList()
     HTMLExchangeNameList.options.length = 0;
     var req = new XMLHttpRequest();
     req.onreadystatechange = function() {
-        if (req.readyState == 4 && req.status == 200)
+        if (req.readyState == 4 && req.status == 200 && checkPassword(req.responseText) == 0)
         {
-            if (checkPassword(req.responseText) == 0)
+            var APIResponseJSON = req.responseText;
+            var exchangeNameList = JSON.parse(APIResponseJSON).sort();
+            for (var exchangeIndex = 0; exchangeIndex < exchangeNameList.length; exchangeIndex++)
             {
-                var APIResponseJSON = req.responseText;
-                var exchangeNameList = JSON.parse(APIResponseJSON).sort();
-                for (var exchangeIndex = 0; exchangeIndex < exchangeNameList.length; exchangeIndex++)
-                {
-                    currentOption = document.createElement("option");
-                    currentOption.text = exchangeNameList[exchangeIndex];
-                    currentOption.value = exchangeNameList[exchangeIndex];
-                    HTMLExchangeNameList.add(currentOption);
-                }
-                
-                var exchangeNameListSize = HTMLExchangeNameList.options.length / 2;
-                if (exchangeNameListSize < 12)
-                {   
-                    HTMLExchangeNameList.size = exchangeNameListSize;
-                }
-                else
-                {
-                    HTMLExchangeNameList.size = 12;
-                }
+                currentOption = document.createElement("option");
+                currentOption.text = exchangeNameList[exchangeIndex];
+                currentOption.value = exchangeNameList[exchangeIndex];
+                HTMLExchangeNameList.add(currentOption);
+            }
+            
+            var exchangeNameListSize = HTMLExchangeNameList.options.length / 2;
+            if (exchangeNameListSize < 12)
+            {   
+                HTMLExchangeNameList.size = exchangeNameListSize;
+            }
+            else
+            {
+                HTMLExchangeNameList.size = 12;
             }
         }
     }
@@ -178,28 +163,24 @@ function updateProfile()
     var returnProfileJSON = JSON.stringify(returnProfile);
     var req = new XMLHttpRequest();
     req.onreadystatechange = function() {
-        if (req.readyState == 4 && req.status == 200)
+        if (req.readyState == 4 && req.status == 200 && checkPassword(req.responseText) == 0)
         {
-            if (checkPassword(req.responseText) == 0)
+            // if new profile, add to profileNameList
+            var inListBool = false;
+            for (var profileIndex = 0; profileIndex < HTMLProfileNameList.options.length; profileIndex++)
             {
-                // if new profile, add to profileNameList
-                var inListBool = false;
-                for (var profileIndex = 0; profileIndex < HTMLProfileNameList.options.length; profileIndex++)
+                if (HTMLProfileNameList.options[profileIndex].value == HTMLProfileName.value)
                 {
-                    if (HTMLProfileNameList.options[profileIndex].value == HTMLProfileName.value)
-                    {
-                        inListBool = true;
-                    }
+                    inListBool = true;
                 }
-                // Now display it in the profileList
-                if (inListBool == false)
-                {
-                    var newOption = document.createElement("option");
-                    newOption.text = HTMLProfileName.value;
-                    newOption.value = HTMLProfileName.value;
-                    HTMLProfileNameList.add(newOption);
-                }
-                getProfileNameList();
+            }
+            // Now display it in the profileList
+            if (inListBool == false)
+            {
+                var newOption = document.createElement("option");
+                newOption.text = HTMLProfileName.value;
+                newOption.value = HTMLProfileName.value;
+                HTMLProfileNameList.add(newOption);
             }
         }
     }
@@ -217,15 +198,12 @@ function getExchangeDetails()
     {
         var req = new XMLHttpRequest();
         req.onreadystatechange = function() {
-            if (req.readyState == 4 && req.status == 200)
+            if (req.readyState == 4 && req.status == 200 && checkPassword(req.responseText) == 0)
             {
-                if (checkPassword(req.responseText) == 0)
-                {
-                    var APIResponseJSON = req.responseText;
-                    var exchangeDetails = JSON.parse(APIResponseJSON);
-                    HTMLexchangeOrderbookLink.href = exchangeDetails.exchangeURL;
-                    HTMLExchangeOrderbookButton.title = "Show the selected exchange's orderbook";
-                }
+                var APIResponseJSON = req.responseText;
+                var exchangeDetails = JSON.parse(APIResponseJSON);
+                HTMLexchangeOrderbookLink.href = exchangeDetails.exchangeURL;
+                HTMLExchangeOrderbookButton.title = "Show the selected exchange's orderbook";
             }
         }
         req.open("POST", "/beeServices/", true);
@@ -256,36 +234,33 @@ function getProfileDetails()
         
     var req = new XMLHttpRequest();
     req.onreadystatechange = function() {
-        if (req.readyState == 4 && req.status == 200)
+        if (req.readyState == 4 && req.status == 200 && checkPassword(req.responseText) == 0)
         {
-            if (checkPassword(req.responseText) == 0)
+            var APIResponseJSON = req.responseText;
+            var profileDetails = JSON.parse(APIResponseJSON);
+            HTMLProfileName.value = profileDetails.profileName;
+            HTMLFrequencyMins.value = profileDetails.frequencyMins;
+            HTMLActive.checked = (profileDetails.active == true);
+            HTMLFileName.value = "bee_" + profileDetails.profileName + ".txt";
+            HTMLLastRunTime.value = profileDetails.lastRunTime;
+            
+            // Highlight the exchanges for this profile (i.e. 'select' the exchange items in the select list)
+            for (var exchangeIndex = 0; exchangeIndex < HTMLExchangeNameList.options.length; exchangeIndex++)
             {
-                var APIResponseJSON = req.responseText;
-                var profileDetails = JSON.parse(APIResponseJSON);
-                HTMLProfileName.value = profileDetails.profileName;
-                HTMLFrequencyMins.value = profileDetails.frequencyMins;
-                HTMLActive.checked = (profileDetails.active == true);
-                HTMLFileName.value = "bee_" + profileDetails.profileName + ".txt";
-                HTMLLastRunTime.value = profileDetails.lastRunTime;
-                
-                // Highlight the exchanges for this profile (i.e. 'select' the exchange items in the select list)
-                for (var exchangeIndex = 0; exchangeIndex < HTMLExchangeNameList.options.length; exchangeIndex++)
+                if (profileDetails.exchangeList.indexOf(HTMLExchangeNameList.options[exchangeIndex].value) in profileDetails.exchangeList)
                 {
-                    if (profileDetails.exchangeList.indexOf(HTMLExchangeNameList.options[exchangeIndex].value) in profileDetails.exchangeList)
-                    {
-                        HTMLExchangeNameList.options[exchangeIndex].selected = true;
-                    }
-                    else
-                    {
-                        HTMLExchangeNameList.options[exchangeIndex].selected = false;
-                    }
+                    HTMLExchangeNameList.options[exchangeIndex].selected = true;
                 }
-                // Display the list of depths - as a CSV list (to make our life easy for the time being)
-                var depthList = profileDetails.depthList;
-                depthCSV = depthList.join(", ");
-                HTMLdepthField.value = depthCSV;
-                HTMLoutPutFileLink.href = "/beeServices/?function=getProfileTextFile&profileName=" + HTMLProfileName.value + "&password=" + HTMLpassword.value;
+                else
+                {
+                    HTMLExchangeNameList.options[exchangeIndex].selected = false;
+                }
             }
+            // Display the list of depths - as a CSV list (to make our life easy for the time being)
+            var depthList = profileDetails.depthList;
+            depthCSV = depthList.join(", ");
+            HTMLdepthField.value = depthCSV;
+            HTMLoutPutFileLink.href = "/beeServices/?function=getProfileTextFile&profileName=" + HTMLProfileName.value + "&password=" + HTMLpassword.value;
         }
     }
     req.open("POST", "/beeServices/", true);
@@ -316,9 +291,8 @@ function deleteProfile()
     {
         var req = new XMLHttpRequest();
         req.onreadystatechange = function() {
-            if (req.readyState == 4 && req.status == 200)
+            if (req.readyState == 4 && req.status == 200 && checkPassword(req.responseText) == 0)
             {
-                checkPassword(req.responseText);
                 clearScreen();
             }
         };
@@ -330,20 +304,16 @@ function deleteProfile()
 
 function getProfileStats()
 {
-    updateProfile();
     var HTMLpassword = document.getElementById("password");
     var HTMLProfileName = document.getElementById("profileName");
     var HTMLStatsList = document.getElementById("statsList");
-    selectedProfileName = HTMLProfileName.value; // then get the value. i.e. the currently-selected profileName.
+    var selectedProfileName = HTMLProfileName.value; // then get the value. i.e. the currently-selected profileName.
     var req = new XMLHttpRequest();
     req.onreadystatechange = function() {
-        if (req.readyState == 4 && req.status == 200)
+        if (req.readyState == 4 && req.status == 200 && checkPassword(req.responseText) == 0)
         {
-            if (checkPassword(req.responseText) == 0)
-            {
-                var statsListASCI = req.responseText;
-                HTMLStatsList.innerHTML = statsListASCI;
-            }
+            var statsListASCI = req.responseText;
+            HTMLStatsList.innerHTML = statsListASCI;
         }
     }
     req.open("POST", "/beeServices/", true);
@@ -357,14 +327,11 @@ function setupPage()
     
     var req = new XMLHttpRequest();
     req.onreadystatechange = function() {
-        if (req.readyState == 4 && req.status == 200)
+        if (req.readyState == 4 && req.status == 200 && checkPassword(req.responseText) == 0)
         {
-            if (checkPassword(req.responseText) == 0)
-            {
-                HTMLLoginDev.style.display = "none";
-                getProfileNameList();
-                getExchangeList(); 
-            }
+            HTMLLoginDev.style.display = "none";
+            getProfileNameList();
+            getExchangeList(); 
         }
     }
     req.open("POST", "/beeServices/", true);
