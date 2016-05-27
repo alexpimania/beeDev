@@ -747,9 +747,9 @@ def constructProfileStatsTextHeader(aProfile):
         theOutput = theOutput +"Bid" + str(depth) + ", " + "Ask" + str(depth) + ", "
 
     for depth in aProfile["depthList"]:
-        theOutput = theOutput +"BidRatio" + str(depth) + ", " 
+        theOutput = theOutput + "BidRatio" + str(depth) + ", " 
 
-    theOutput = theOutput + " Warnings,\n\n"
+    theOutput += " Warnings,\n\n"
 
     return theOutput
 
