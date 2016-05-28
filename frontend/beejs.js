@@ -24,6 +24,7 @@ function engineStart()
         if (req.readyState == 4 && req.status == 200 && checkPassword(req.responseText) == 0)
         {
             HTMLStatsList.innerHTML = req.responseText;
+            resizeTextarea(HTMLStatsList);
         }
     }
     req.open("POST", "/beeServices/", true);
@@ -39,6 +40,7 @@ function engineStop()
         if (req.readyState == 4 && req.status == 200 && checkPassword(req.responseText) == 0)
         {
             HTMLStatsList.innerHTML = req.responseText;
+            resizeTextarea(HTMLStatsList);
         }
     }
     req.open("POST", "/beeServices/", true);
@@ -54,6 +56,7 @@ function engineCheck()
         if (req.readyState == 4 && req.status == 200 && checkPassword(req.responseText) == 0)
         {
             HTMLStatsList.innerHTML = req.responseText;
+            resizeTextarea(HTMLStatsList);
         }
     }
     req.open("POST", "/beeServices/", true);
@@ -231,6 +234,7 @@ function getProfileDetails()
     var HTMLLastRunTime = document.getElementById("lastRunTime");
     
     HTMLStatsList.innerHTML = "";
+    resizeTextarea(HTMLStatsList);
         
     var req = new XMLHttpRequest();
     req.onreadystatechange = function() {
@@ -314,10 +318,17 @@ function getProfileStats()
         {
             var statsListASCI = req.responseText;
             HTMLStatsList.innerHTML = statsListASCI;
+            resizeTextarea(HTMLStatsList);
         }
     }
     req.open("POST", "/beeServices/", true);
     req.send("function=getProfileStatsText&profileName=" + selectedProfileName + "&password=" + HTMLpassword.value);
+}
+
+function resizeTextarea(HTMLElement) 
+{
+    HTMLElement.style.height = '24px';
+    HTMLElement.style.height = HTMLElement.scrollHeight + 12 + 'px';
 }
 
 function setupPage()
