@@ -114,7 +114,7 @@ def getOrderBookStatsList(bidsAndAsks, depthList):
 
     # If we didn't find enough bids, append False entries to pricesAtBidDepths[]
     if len(pricesAtBidDepths) < len(depthList):
-        maxOutError.append("bids have been maxed out")
+        maxOutError.append("bids")
         
     while len(pricesAtBidDepths) < len(depthList):       
         try:
@@ -153,7 +153,7 @@ def getOrderBookStatsList(bidsAndAsks, depthList):
 #   print("compare: " + str((len(pricesAtAskDepths) < len(depthList))) + str(len(pricesAtAskDepths)) + " " + str(len(depthList)))
     if len(pricesAtAskDepths) < len(depthList):
 #        print("appended it!")
-        maxOutError.append("asks have been maxed out")
+        maxOutError.append("asks")
         
     while len(pricesAtAskDepths) < len(depthList):
         try:
@@ -179,7 +179,7 @@ def getOrderBookStatsList(bidsAndAsks, depthList):
         depthListIndex = depthListIndex + 1
 
     if maxOutError:
-        maxOutError = "Maxed out: (" + " | ".join(maxOutError) + ")"
+        maxOutError = "Maxed out: (" + " and ".join(maxOutError) + ")"
 
     return [[bidsFiatTotal, asksBTCTotal, pricesAtBidDepths, pricesAtAskDepths, depthRatios], maxOutError]
 
@@ -626,7 +626,7 @@ def generateOutput(profileName):
             # - list of bid 'ratios' for each entry in depthList 
             outputLine = constructProfileStatsTextLine(statsList)
             errorColumn = [str(error) for error in [failedExchanges, maxOutError] if error]
-            errorColumn = ["(" + " | ".join(errorColumn) + ")" if errorColumn else ""][0]
+            errorColumn = ["[" + " | ".join(errorColumn) + "]" if errorColumn else ""][0]
             outputLine += errorColumn + "\n"
             
             # Check the logfile directory exists. If not create it.
@@ -716,7 +716,7 @@ def getProfileStatsText(profileName):
             outputLine = headerText + lineText
             
             errorColumn = [str(error) for error in [failedExchanges, maxOutError] if error]
-            errorColumn = ["(" + " | ".join(errorColumn) + ")" if errorColumn else ""][0]
+            errorColumn = ["[" + " | ".join(errorColumn) + "]" if errorColumn else ""][0]
             outputLine += errorColumn + "\n"
             
             return outputLine
