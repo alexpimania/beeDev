@@ -178,8 +178,10 @@ def getOrderBookStatsList(bidsAndAsks, depthList):
 
         depthListIndex = depthListIndex + 1
 
+    if maxOutError:
+        maxOutError = "Maxed out: (" + " | ".join(maxOutError) + ")"
 
-    return [[bidsFiatTotal, asksBTCTotal, pricesAtBidDepths, pricesAtAskDepths, depthRatios], " and ".join(maxOutError)]
+    return [[bidsFiatTotal, asksBTCTotal, pricesAtBidDepths, pricesAtAskDepths, depthRatios], maxOutError]
 
 
 def getBid1000Price(bidsAndAsks):
