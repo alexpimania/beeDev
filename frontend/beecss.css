@@ -17,7 +17,11 @@ html *
    color: blue;
    font-weight: 900; 
 }
-a, p, h1, h2, h3, label
+a
+{
+    text-decoration: none;
+}
+p, h1, h2, h3, label
 { 
    display: block;
    text-align: center;
