@@ -306,7 +306,7 @@ function deleteProfile()
     }
 }
 
-function getProfileStats()
+function getProfileStatsCSV()
 {
     var HTMLpassword = document.getElementById("password");
     var HTMLProfileName = document.getElementById("profileName");
@@ -323,6 +323,25 @@ function getProfileStats()
     }
     req.open("POST", "/beeServices/", true);
     req.send("function=getProfileStatsText&profileName=" + selectedProfileName + "&password=" + HTMLpassword.value);
+}
+
+function getProfileStatsJSON()
+{
+    var HTMLpassword = document.getElementById("password");
+    var HTMLProfileName = document.getElementById("profileName");
+    var HTMLStatsList = document.getElementById("statsList");
+    var selectedProfileName = HTMLProfileName.value; // then get the value. i.e. the currently-selected profileName.
+    var req = new XMLHttpRequest();
+    req.onreadystatechange = function() {
+        if (req.readyState == 4 && req.status == 200 && checkPassword(req.responseText) == 0)
+        {
+            var statsListJSON = req.responseText;
+            HTMLStatsList.innerHTML = statsListJSON;
+            resizeTextarea(HTMLStatsList);
+        }
+    }
+    req.open("POST", "/beeServices/", true);
+    req.send("function=getProfileStats&profileName=" + selectedProfileName + "&password=" + HTMLpassword.value);
 }
 
 function resizeTextarea(HTMLElement) 
