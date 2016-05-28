@@ -9,7 +9,7 @@
 # statcheck     Checks the statistics service is running. Returns 0 if yes, 1 if no.
 
 # set the install directory location
-BEE_PATH="/home/pimania/projects/bee"
+BEE_PATH=`pwd`
 
 # Set to your version of python
 PYTHON=python3
