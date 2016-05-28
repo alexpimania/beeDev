@@ -17,10 +17,11 @@ html *
    color: blue;
    font-weight: 900; 
 }
-p, h1, h2, h3, label
+a, p, h1, h2, h3, label
 { 
    display: block;
    text-align: center;
+   text-decoration: none;
 }
 button
 {
