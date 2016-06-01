@@ -157,7 +157,7 @@ def getOrderBookStatsList(bidsAndAsks, depthList):
         
     while len(pricesAtAskDepths) < len(depthList):
         try:
-            pricesAtAskDepths.append(round(accumulatedBidFiat / accumulatedBidAmount,2))
+            pricesAtAskDepths.append(round(accumulatedAskFiat / accumulatedAskAmount,2))
         except:
             pricesAtAskDepths.append("No Data")
 
