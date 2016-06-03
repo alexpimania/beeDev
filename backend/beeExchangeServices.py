@@ -42,10 +42,21 @@ def getOrderBook(exchangeList):
             except:
                 newOrderBook = [[],[]] # if the data download from the exchange failed, just add nothing!
                 failedExchanges.append(exchange["exchangeName"])
-
+                
+            if exchange["exchangeCurrency"] != "USD":
+                convertedOrderBook = []
+                exchangeRatio = getExchangeRate(exchange["exchangeCurrency"], "USD")
+                for orderList in newOrderBook:
+                    convertedOrderList = []
+                    for order in orderList:
+                        order[0] = float(order[0])
+                        order[0] *= exchangeRatio
+                        convertedOrderList.append(order)
+                    convertedOrderBook.append(convertedOrderList)
+                newOrderBook = convertedOrderBook
             # Now merge the new orderbook with our accumulated orderbook
             mergedOrderBook = orderBookMerger(mergedOrderBook, newOrderBook) # merge the accumulated orderBook with the new orderrbook from this iteration's exchange.
-
+            
     mergedOrderBook[0] = sorted(mergedOrderBook[0], key = lambda  x: x[0])[::-1] # Sorts bids according to price - in REVERSE
     mergedOrderBook[1] = sorted(mergedOrderBook[1], key = lambda  x: x[0]) # Sorts asks according to price.
     if failedExchanges:
@@ -505,7 +516,7 @@ def getProfileDetails(profileToMatch):
     return "Not found"
 
 
-def getExchangeList(exchangeGroup):
+def getExchangeList():
 
     # Returns the JSON list of all exchanges in the exchangeGroup. If no exchangeGroup specified, returns all exchanges.
     # Exchanges are obtained from an ini file beeExchangeList.ini
@@ -518,8 +529,7 @@ def getExchangeList(exchangeGroup):
 
     # Build the list of exchanges specified by the exchangeGroup
     for anExchange in exchangeList:
-        if anExchange["exchangeCurrency"] == exchangeGroup or exchangeGroup == "":
-            returnListOfExchanges.append(anExchange["exchangeName"]) 
+        returnListOfExchanges.append(anExchange["exchangeName"]) 
 
     returnListOfExchanges = sorted(returnListOfExchanges) # Sort the list
     
@@ -856,3 +866,15 @@ def getExchangeDetails(exchangeName):
 
     # If didn't find exchangeName, return error.
     return "Not found"
+
+def getExchangeRate(originalCurrenySymbol, destinationCurrencySymbol="USD"):
+    import requests
+    import json
+    
+    if not originalCurrenySymbol == destinationCurrencySymbol:
+        responseJson = requests.get("http://api.fixer.io/latest?symbols=" + destinationCurrencySymbol + "&base=" + originalCurrenySymbol).content.decode("UTF-8")
+        decodedResponse = json.loads(responseJson)
+        exchangeRatio = decodedResponse["rates"][destinationCurrencySymbol]
+        return exchangeRatio
+    else:
+        return amount
