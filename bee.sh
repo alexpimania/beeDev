@@ -9,7 +9,7 @@
 # statcheck     Checks the statistics service is running. Returns 0 if yes, 1 if no.
 
 # set the install directory location
-BEE_PATH=`pwd`
+BEE_PATH="/home/pi/projects/bee"
 
 # Set to your version of python
 PYTHON=python3
