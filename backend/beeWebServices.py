@@ -3,6 +3,7 @@ import os
 BEE_PATH = sys.argv[1] + "/frontend"
 Orig_BEE_PATH = sys.argv[1] 
 port = sys.argv[2]
+sys.path.append("/usr/lib/python3/dist-packages")
 
 import beeExchangeServices as beeServices
 import tornado.ioloop
@@ -47,7 +48,7 @@ class homeHandler(tornado.web.RequestHandler):
                 self.write(beeServices.getProfileDetails(arguments["profileName"]))     # INPUT: string of profileName
 
             elif arguments["function"] == "getExchangeList":
-                self.write(beeServices.getExchangeList("USD"))                                  # use usd FOR THE TIME BEING
+                self.write(beeServices.getExchangeList())                                  # use usd FOR THE TIME BEING
 
             elif arguments["function"] == "updateProfile":
                 self.write(beeServices.updateProfile(arguments["profileDetails"]))      # INPUT: JSON profileDetails
