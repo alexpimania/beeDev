@@ -17,7 +17,7 @@
 <div id="loginDiv">
     <label>BEE Access Code</label>
     <br>
-    <input id="password" type="password">
+    <input id="password" onkeydown="javascript:if (event.keyCode == 13){setupPage()}" type="password">
     <br>
     <button onclick="setupPage()">Login to BEE</button>
 </div>
