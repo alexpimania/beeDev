@@ -877,4 +877,4 @@ def getExchangeRate(originalCurrenySymbol, destinationCurrencySymbol="USD"):
         exchangeRatio = decodedResponse["rates"][destinationCurrencySymbol]
         return exchangeRatio
     else:
-        return amount
+        return 1
