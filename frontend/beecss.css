@@ -73,3 +73,9 @@ alignDiv
 {
    text-align: center;
 }
+#password {
+    width: auto;
+}
+#showPasswordLabel {
+    display: inline;
+}
