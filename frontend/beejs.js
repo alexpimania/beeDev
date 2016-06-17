@@ -1,16 +1,19 @@
 function checkPassword(response)
 {
     HTMLLLoginDiv = document.getElementById("loginDiv");
+    HTMLPassword = document.getElementById("password");
+    HTMLStatus = document.getElementById("status");
     if (response === "Invalid Password")
     {
+        HTMLPassword.value = "";
         HTMLLLoginDiv.style.display = "block";
-        document.getElementById("status").innerHTML = "<span style='color: red'>Invalid Access Code</span>";
+        HTMLStatus.innerHTML = "<span style='color: red'>Invalid Access Code</span>";
         return 1;
     }
     else
     {
         HTMLLLoginDiv.style.display = "none";
-        document.getElementById("status").innerHTML = "<span style='color: green'>Valid Access Code</span>";
+        HTMLStatus.innerHTML = "<span style='color: green'>Valid Access Code</span>";
         return 0;
     }
 }
@@ -367,3 +370,4 @@ function setupPage()
     req.open("POST", "/beeServices/", true);
     req.send("function=getExchangeList&password=" + HTMLPassword.value);
 }
+    
