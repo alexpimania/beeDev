@@ -17,23 +17,25 @@
 <div id="loginDiv">
     <label>BEE Access Code</label>
     <br>
-    <input id="password" onkeydown="javascript:if (event.keyCode == 13){setupPage()}" type="password" autofocus>
+    <input id="password" onkeydown="if (event.keyCode == 13){setupPage()}" type="password" autofocus><br>
+    <label id="showPasswordLabel">Show Password</label><input type="checkbox" id="showPassword" onchange="if(this.checked == true) {document.getElementById('password').type = 'text';} else {document.getElementById('password').type = 'password'}">
     <br>
-    <button onclick="setupPage()">Login to BEE</button>
+    <button onclick="setupPage()">Authenticate</button>
+    <br><br>
 </div>
-<label>Profile List</label><br>
+<label>Profile List</label>
 <select   id="profileNameList" onchange="getProfileDetails()" multiple></select>
 <br>
-<label><b>Profile Details: </b></label>
+<h2><b>Profile Details: </b></h2>
 <br>
-<label>Profile name</label><br>     <input    id="profileName"     type="text">
-<label>Exchange List</label><br>    <select   id="exchangeList"    onchange="getExchangeDetails()" multiple></select>
-<label>Frequency (minutes)</label><br>  <input    id="frequencyMins"   type="number"   name="quantity" min="1" class="field">
-<label>Output file name</label><br>    <input    id="fileName"        type="text"     readonly>
-<label>Active</label>   <input    id="active"  type="checkbox" name="active"><br>
-<label>Depth List</label><br>              <input    id="depthText"       type="text">
-<label>Last run time</label><br>     <input    id="lastRunTime"     type="text">
-<label>Stats</label>            <textarea id="statsList"       class="field"   readonly></textarea>                
+<label>Profile Name</label>     <input    id="profileName"     type="text"><br><br>
+<label>Exchange List</label>   <select   id="exchangeList"    onchange="getExchangeDetails()" multiple></select><br><br>
+<label>Frequency (Minutes)</label>  <input    id="frequencyMins"   type="number"   name="quantity" min="1" class="field"><br><br>
+<label>Log File Name</label>    <input    id="fileName"        type="text"     readonly><br><br>
+<label>Active</label>   <input    id="active"  type="checkbox" name="active"><br><br>
+<label>Depth List</label>             <input    id="depthText"       type="text"><br><br>
+<label>Last Run Time</label>     <input    id="lastRunTime"     type="text"><br><br>
+<label>Stats</label>         <textarea id="statsList"       class="field"   readonly></textarea>                
 <br><br>
 
 <button id="saveButton" onclick="updateProfile()"  title="Save profile" class="button">Save</button>
@@ -58,3 +60,4 @@
 </a>
 </div>
 </body>
+
