@@ -1,3 +1,4 @@
+
 # BEE digital currency trading engine.
 # Contains:
 # -  orderBook operations.
@@ -8,6 +9,7 @@
 import os
 import json # to encode and decode Json
 import sys
+import requests
 
 # Set the BEE_PATH from the corresponding OS environment variable.
 # BEE_PATH contains the ini files and output files for each profile.
@@ -15,7 +17,7 @@ import sys
 BEE_PATH = sys.argv[1]  # this argument is passed in by the calling script and will fail if not provided.
 
 
-    
+
 def getOrderBook(exchangeList):
     # Gets orderBooks for specified exchanges - as specified in the input exchangeList
     # Returns a merged orderbook.
@@ -29,20 +31,20 @@ def getOrderBook(exchangeList):
 
     with open(BEE_PATH + "/backend" + "/beeExchangeList.ini") as beeExchangeListFile:
         allExchanges = json.loads(beeExchangeListFile.read())
-    
+
     # Step through all exchanges and match the one's of this profile. i.e. ignore those not in the profile's exchange list.
     for exchange in allExchanges:
-        
+
         # If this exchange is in the profile's exchange list, then get the orderbook
         if exchange["exchangeName"] in exchangeList:
 
-            # run the orderbook load routine for this type of exchange 
+            # run the orderbook load routine for this type of exchange
             try:
                 newOrderBook = eval("orderBookLoad" + str(exchange["exchangeType"]))(str(exchange["exchangeURL"]))
             except:
                 newOrderBook = [[],[]] # if the data download from the exchange failed, just add nothing!
                 failedExchanges.append(exchange["exchangeName"])
-                
+
             if exchange["exchangeCurrency"] != "USD":
                 convertedOrderBook = []
                 exchangeRatio = getExchangeRate(exchange["exchangeCurrency"], "USD")
@@ -56,7 +58,7 @@ def getOrderBook(exchangeList):
                 newOrderBook = convertedOrderBook
             # Now merge the new orderbook with our accumulated orderbook
             mergedOrderBook = orderBookMerger(mergedOrderBook, newOrderBook) # merge the accumulated orderBook with the new orderrbook from this iteration's exchange.
-            
+
     mergedOrderBook[0] = sorted(mergedOrderBook[0], key = lambda  x: x[0])[::-1] # Sorts bids according to price - in REVERSE
     mergedOrderBook[1] = sorted(mergedOrderBook[1], key = lambda  x: x[0]) # Sorts asks according to price.
     if failedExchanges:
@@ -66,17 +68,17 @@ def getOrderBook(exchangeList):
 
 
 def getOrderBookStatsList(bidsAndAsks, depthList):
- 
+
     # Given an orderbook and a list of depths, returns the following:
     # - bidsFiatTotal
     # - asksBTCTotal
     # - list of pricesAtBidDepths,
     # - list of pricesAtAskDepths,
-    # - list of bid 'ratios' for each entry in depthList 
+    # - list of bid 'ratios' for each entry in depthList
     bidDepth = 0
     bidsFiatTotal = 0
     maxOutError = []
-    
+
     # Calc total of Amounts of bids for orderbook
     for bidOrder in bidsAndAsks[0]:
         # bidDepth = bidDepth + bidOrder[1]  # NOT REQUIRED?
@@ -86,7 +88,7 @@ def getOrderBookStatsList(bidsAndAsks, depthList):
 
     askDepth = 0
     asksBTCTotal = 0
-    
+
     # Calc total of Amounts of asks for orderbook
     for askOrder in bidsAndAsks[1]:
         # askDepth = askDepth + askOrder[1]  # NOT REQUIRED?
@@ -94,7 +96,7 @@ def getOrderBookStatsList(bidsAndAsks, depthList):
         # Accumulate Price * Amount into bidsOrderFiat
         asksBTCTotal = asksBTCTotal + askOrder[1]
 
-  
+
     # Now setup for getting the prices at all bid depths.
     depthListIndex = 0
     accumulatedBidAmount = 0
@@ -103,16 +105,16 @@ def getOrderBookStatsList(bidsAndAsks, depthList):
 
     # Step through the bids
     for bidOrder in bidsAndAsks[0]:
-        
+
         # Accumulate the amount of bids
         accumulatedBidAmount = accumulatedBidAmount + bidOrder[1]
 
         # Accumulate the fiat (e.g. USD) of bids. i.e. sum(bidOrder[amount] * bidOrder[BTC])
         accumulatedBidFiat = accumulatedBidFiat + (bidOrder[0] * bidOrder[1])
-        
+
         # If we've reached the current depthList threshold, save then go to next depthList entry
         if accumulatedBidAmount >= float(depthList[depthListIndex]):
-            
+
             # pricesAtBidDepths.append(bidOrder[0]) WAS THIS
             pricesAtBidDepths.append(round(accumulatedBidFiat / accumulatedBidAmount,2))
 
@@ -121,18 +123,18 @@ def getOrderBookStatsList(bidsAndAsks, depthList):
             # Leave the FOR loop if we've exhausted the list of depthList entries
             if depthListIndex == len(depthList):
                 break
-                
+
 
     # If we didn't find enough bids, append False entries to pricesAtBidDepths[]
     if len(pricesAtBidDepths) < len(depthList):
         maxOutError.append("bids")
-        
-    while len(pricesAtBidDepths) < len(depthList):       
+
+    while len(pricesAtBidDepths) < len(depthList):
         try:
             pricesAtBidDepths.append(round(accumulatedBidFiat / accumulatedBidAmount,2))
         except:
             pricesAtBidDepths.append("No Data")
-            
+
 
     # Now setup for getting the prices at all ask depths.
     depthListIndex = 0
@@ -141,31 +143,29 @@ def getOrderBookStatsList(bidsAndAsks, depthList):
     pricesAtAskDepths = []
     # Step through the asks
     for askOrder in bidsAndAsks[1]:
-        
+
         # Accumulate the amount of asks
         accumulatedAskAmount = accumulatedAskAmount + askOrder[1]
 
         # Accumulate the fiat (e.g USD) of asks. i.e. sum(askOrder[amount] * askOrder[BTC])
         accumulatedAskFiat = accumulatedAskFiat + (askOrder[0] * askOrder[1])
 
-        # If we've reached the current depthList threshold, save to pricesAtAskDepths then go to next depthList entry 
+        # If we've reached the current depthList threshold, save to pricesAtAskDepths then go to next depthList entry
         if accumulatedAskAmount >= float(depthList[depthListIndex]):
-            
+
             # pricesAtAskDepths.append(askOrder[0]) WAS THIS
             pricesAtAskDepths.append(round(accumulatedAskFiat / accumulatedAskAmount,2))
 
             depthListIndex = depthListIndex + 1
 
-            # If we've exhausted the list of depthList entries, leave the FOR loop 
+            # If we've exhausted the list of depthList entries, leave the FOR loop
             if depthListIndex == len(depthList):
                 break
 
     # If we didn't find enough asks, append False entries to pricesAtAskDepths[]
-#   print("compare: " + str((len(pricesAtAskDepths) < len(depthList))) + str(len(pricesAtAskDepths)) + " " + str(len(depthList)))
     if len(pricesAtAskDepths) < len(depthList):
-#        print("appended it!")
         maxOutError.append("asks")
-        
+
     while len(pricesAtAskDepths) < len(depthList):
         try:
             pricesAtAskDepths.append(round(accumulatedAskFiat / accumulatedAskAmount,2))
@@ -202,15 +202,15 @@ def getBid1000Price(bidsAndAsks):
 ##
 ##    # Step through the bids up unto 1000
 ##    for currentBid in bidsAndAsks[0]:
-##        
+##
 ##        # Accumulate the amount of bids
 ##        accumulatedBidAmount = accumulatedBidAmount + currentBid[1]
 ##
-##        # If we've reached the current depthList threshold, save then go to next depthList entry 
+##        # If we've reached the current depthList threshold, save then go to next depthList entry
 ##        if accumulatedBidAmount >= 1000:
 ##            return currentBid[0]
 ##
-##    # If we didn't find enough bids,  return 'False' 
+##    # If we didn't find enough bids,  return 'False'
 ##    return "False"
 
     # Now setup for getting the prices at all bid depths.
@@ -220,20 +220,20 @@ def getBid1000Price(bidsAndAsks):
 
     # Step through the bids
     for bidOrder in bidsAndAsks[0]:
-        
+
         # Accumulate the amount of bids
         accumulatedBidAmount = accumulatedBidAmount + bidOrder[1]
 
         # Accumulate the fiat (e.g. USD) of bids. i.e. sum(bidOrder[amount] * bidOrder[BTC])
         accumulatedBidFiat = accumulatedBidFiat + (bidOrder[0] * bidOrder[1])
-        
+
         # If we've reached the depthList threshold, return the average
         if accumulatedBidAmount >= 1000: #float(depthList[depthListIndex]):
-            
+
             return round(accumulatedBidFiat / accumulatedBidAmount,2) # i.e. the average price.
-           
-    # Ah, we didn't find enough bids. Return 'False' 
-    return "False"    
+
+    # Ah, we didn't find enough bids. Return 'False'
+    return "False"
 
 
 
@@ -307,9 +307,9 @@ def orderBookLoadtype3(URL):
     for order in dictResponse["btc_usd"]["asks"]:
         bidsAndAsks[1].append([float(order[0]), float(order[1])])
 
-    return bidsAndAsks    
-    
-    
+    return bidsAndAsks
+
+
 def orderBookLoadtype4(URL):
     import requests #Import the module that is used to download order-book off API
     import json #Import module that has the ability to encode and decode Json
@@ -328,8 +328,8 @@ def orderBookLoadtype4(URL):
     for order in dictResponse["data"]["asks"]:
         bidsAndAsks[1].append([float(order["price"]), float(order["amount"])])
 
-    return bidsAndAsks    
-    
+    return bidsAndAsks
+
 
 def orderBookLoadtype5(URL):
     import requests #Import the module that is used to download order-book off API
@@ -349,7 +349,7 @@ def orderBookLoadtype5(URL):
     for order in dictResponse["result"]["XXBTZUSD"]["asks"]:
         bidsAndAsks[1].append([float(order[0]), float(order[1])])
 
-    return bidsAndAsks    
+    return bidsAndAsks
 
 
 def orderBookLoadtype6(URL):
@@ -391,8 +391,8 @@ def orderBookLoadtype7(URL):
         bidsAndAsks[1].append([float(order[0]), float(order[1])])
 
     return bidsAndAsks
-    
-      
+
+
 def orderBookLoadtype8(URL):
     import requests #Import the module that is used to download order-book off API
     import json #Import module that has the ability to encode and decode Json
@@ -411,7 +411,7 @@ def orderBookLoadtype8(URL):
     for order in dictResponse["ask"]:
         bidsAndAsks[1].append([float(order["usd"]), float(order["btc"])])
 
-    return bidsAndAsks  
+    return bidsAndAsks
 
 
 def orderBookLoadtype9(URL):
@@ -475,6 +475,185 @@ def orderBookLoadtype11(URL):
         bidsAndAsks[1].append([float(order[0]), float(order[2])])
 
     return bidsAndAsks
+
+
+########### The following are price load functions:##################################
+def priceLoadtype1(URL):
+    import requests #Import the module that is used to download order-book off API
+    import json #Import module that has the ability to encode and decode Json
+
+    response = requests.get(URL, verify=False) #Getting the latest price from the exchange api
+    decodedResponse = json.loads(response.content.decode("utf-8"))
+    # get the bids from the APi response and put them into the std format
+    lastPrice = float(decodedResponse["last_price"])
+
+    return lastPrice
+
+def priceLoadtype2(URL):
+    import requests #Import the module that is used to download order-book off API
+    import json #Import module that has the ability to encode and decode Json
+
+    response = requests.get(URL, verify=False) #Getting the latest price from the exchange api
+    decodedResponse = json.loads(response.content.decode("utf-8"))
+    # get the bids from the APi response and put them into the std format
+    lastPrice = float(decodedResponse["last"])
+
+    return lastPrice
+
+def priceLoadtype3(URL):
+    import requests #Import the module that is used to download order-book off API
+    import json #Import module that has the ability to encode and decode Json
+
+    response = requests.get(URL, verify=False) #Getting the latest price from the exchange api
+    decodedResponse = json.loads(response.content.decode("utf-8"))
+    # get the bids from the APi response and put them into the std format
+    lastPrice = float(decodedResponse["data"]["amount"])
+
+    return lastPrice
+
+def priceLoadtype4(URL):
+    import requests #Import the module that is used to download order-book off API
+    import json #Import module that has the ability to encode and decode Json
+
+    response = requests.get(URL, verify=False) #Getting the latest price from the exchange api
+    decodedResponse = json.loads(response.content.decode("utf-8"))
+    # get the bids from the APi response and put them into the std format
+    lastPrice = float(decodedResponse["ticker"]["last"])
+
+    return lastPrice
+
+def priceLoadtype5(URL):
+    import requests #Import the module that is used to download order-book off API
+    import json #Import module that has the ability to encode and decode Json
+
+    response = requests.get(URL, verify=False) #Getting the latest price from the exchange api
+    decodedResponse = json.loads(response.content.decode("utf-8"))
+    # get the bids from the APi response and put them into the std format
+    lastPrice = float(decodedResponse["btc_usd"]["last"])
+
+    return lastPrice
+
+def priceLoadtype6(URL):
+    import requests #Import the module that is used to download order-book off API
+    import json #Import module that has the ability to encode and decode Json
+
+    response = requests.get(URL, verify=False) #Getting the latest price from the exchange api
+    decodedResponse = json.loads(response.content.decode("utf-8"))
+    # get the bids from the APi response and put them into the std format
+    lastPrice = float(decodedResponse["lastPrice"])
+
+    return lastPrice
+
+def priceLoadtype7(URL):
+    import requests #Import the module that is used to download order-book off API
+    import json #Import module that has the ability to encode and decode Json
+
+    response = requests.get(URL, verify=False) #Getting the latest price from the exchange api
+    decodedResponse = json.loads(response.content.decode("utf-8"))
+    # get the bids from the APi response and put them into the std format
+    lastPrice = float(decodedResponse["data"]["last"]["value"])
+
+    return lastPrice
+
+def priceLoadtype8(URL):
+    import requests #Import the module that is used to download order-book off API
+    import json #Import module that has the ability to encode and decode Json
+
+    response = requests.get(URL, verify=False) #Getting the latest price from the exchange api
+    decodedResponse = json.loads(response.content.decode("utf-8"))
+    # get the bids from the APi response and put them into the std format
+    lastPrice = float(decodedResponse["result"]["XXBTZUSD"]["c"][0])
+
+    return lastPrice
+
+def priceLoadtype9(URL):
+    import requests #Import the module that is used to download order-book off API
+    import json #Import module that has the ability to encode and decode Json
+
+    response = requests.get(URL, verify=False) #Getting the latest price from the exchange api
+    decodedResponse = json.loads(response.content.decode("utf-8"))
+    # get the bids from the APi response and put them into the std format
+    lastPrice = float(decodedResponse["Last Trade"])
+
+    return lastPrice
+
+def priceLoadtype10(URL):
+    import requests #Import the module that is used to download order-book off API
+    import json #Import module that has the ability to encode and decode Json
+
+    response = requests.get(URL, verify=False) #Getting the latest price from the exchange api
+    decodedResponse = json.loads(response.content.decode("utf-8"))
+    # get the bids from the APi response and put them into the std format
+    lastPrice = float(decodedResponse["result"][0]["last"])
+
+    return lastPrice
+
+def priceLoadtype11(URL):
+    import requests #Import the module that is used to download order-book off API
+    import json #Import module that has the ability to encode and decode Json
+
+    response = requests.get(URL, verify=False) #Getting the latest price from the exchange api
+    decodedResponse = json.loads(response.content.decode("utf-8"))
+    # get the bids from the APi response and put them into the std format
+    lastPrice = float(decodedResponse["USD"]["last"])
+
+    return lastPrice
+
+def priceLoadtype12(URL):
+    import requests #Import the module that is used to download order-book off API
+    import json #Import module that has the ability to encode and decode Json
+
+    response = requests.get(URL, verify=False) #Getting the latest price from the exchange api
+    decodedResponse = json.loads(response.content.decode("utf-8"))
+    # get the bids from the APi response and put them into the std format
+    lastPrice = float(decodedResponse["value"])
+
+    return lastPrice
+
+def priceLoadtype13(URL):
+    import requests #Import the module that is used to download order-book off API
+    import json #Import module that has the ability to encode and decode Json
+
+    response = requests.get(URL, verify=False) #Getting the latest price from the exchange api
+    decodedResponse = json.loads(response.content.decode("utf-8"))
+    # get the bids from the APi response and put them into the std format
+    lastPrice = float(decodedResponse["data"]["last"])
+
+    return lastPrice
+
+def priceLoadtype14(URL):
+    import requests #Import the module that is used to download order-book off API
+    import json #Import module that has the ability to encode and decode Json
+
+    response = requests.get(URL, verify=False) #Getting the latest price from the exchange api
+    decodedResponse = json.loads(response.content.decode("utf-8"))
+    # get the bids from the APi response and put them into the std format
+    lastPrice = float(decodedResponse["last"])
+
+    return lastPrice
+
+def priceLoadtype15(URL):
+    import requests #Import the module that is used to download order-book off API
+    import json #Import module that has the ability to encode and decode Json
+
+    response = requests.get(URL, verify=False) #Getting the latest price from the exchange api
+    decodedResponse = json.loads(response.content.decode("utf-8"))
+    # get the bids from the APi response and put them into the std format
+    lastPrice = float(decodedResponse["BTC_USD"]["last_trade"])
+
+    return lastPrice
+    
+def priceLoadtype16(URL):
+    import requests #Import the module that is used to download order-book off API
+    import json #Import module that has the ability to encode and decode Json
+
+    response = requests.get(URL, verify=False) #Getting the latest price from the exchange api
+    decodedResponse = json.loads(response.content.decode("utf-8"))
+    # get the bids from the APi response and put them into the std format
+    lastPrice = float(decodedResponse["btc_eur"]["last"])
+
+    return lastPrice
+
 #####################################################################################
 ########### The following are the UI admin services. These mostly return/expect JSON.
 #####################################################################################
@@ -485,24 +664,24 @@ def orderBookLoadtype11(URL):
 def getProfileNameList():
     # Returns a JSON list of all profile names. No input required.
     # This is used by the UI so it can display the profile list.
-    
+
     import json #Import module that has the ability to encode and decode Json
 
     returnProfileNameList = [] # Define the list
-    
+
     iniProfiles = json.loads(open(BEE_PATH + "/backend" + '/beeProfileList.ini').read())
 
     for aProfile in iniProfiles:
-        returnProfileNameList.append(aProfile["profileName"]) 
+        returnProfileNameList.append(aProfile["profileName"])
 
     return json.dumps(returnProfileNameList, sort_keys=False, indent=4)
 
- 
+
 
 def getProfileDetails(profileToMatch):
     # Returns the JSON profile details for the specified profile (profileToMatch)
     # This is used by the UI so it can display the profile details.
-    
+
     import json #Import module that has the ability to encode and decode Json
 
     iniProfiles = json.loads(open(BEE_PATH + "/backend" + '/beeProfileList.ini').read())
@@ -520,7 +699,7 @@ def getExchangeList():
 
     # Returns the JSON list of all exchanges in the exchangeGroup. If no exchangeGroup specified, returns all exchanges.
     # Exchanges are obtained from an ini file beeExchangeList.ini
-    
+
     import json #Import module that has the ability to encode and decode Json
 
     exchangeList = json.loads(open(BEE_PATH + "/backend" + '/beeExchangeList.ini').read())
@@ -529,10 +708,10 @@ def getExchangeList():
 
     # Build the list of exchanges specified by the exchangeGroup
     for anExchange in exchangeList:
-        returnListOfExchanges.append(anExchange["exchangeName"]) 
+        returnListOfExchanges.append(anExchange["exchangeName"])
 
     returnListOfExchanges = sorted(returnListOfExchanges) # Sort the list
-    
+
     return json.dumps(returnListOfExchanges, sort_keys=False, indent=4)
 
 
@@ -541,7 +720,7 @@ def updateProfile(profileDetailsJSON):
     # Takes a JSON profileDetails as input.
     # Updates an existing profile with the profileDetailsJSON if the profileName exists,
     # otherwise creates a new profile with profileDetailsJSON.
-   
+
     import json #Import module that has the ability to encode and decode Json
 
     iniProfiles = json.loads(open(BEE_PATH + "/backend" + '/beeProfileList.ini').read())
@@ -550,8 +729,8 @@ def updateProfile(profileDetailsJSON):
 
     # Ensure the depthlist entries are sorted numerically
     sortedDepthList = sorted(profileDetails["depthList"], key = lambda x: int(x))
-    profileDetails["depthList"] = sortedDepthList     
-    
+    profileDetails["depthList"] = sortedDepthList
+
     profileIndex = 0
 
     #Step through the profiles to see if we should update an existing entry.
@@ -560,16 +739,16 @@ def updateProfile(profileDetailsJSON):
 
             # Found matching entry - so update it, write it all back to the ini file then return.
             iniProfiles[profileIndex] = profileDetails
-            
+
             with open(BEE_PATH + "/backend" + '/beeProfileList.ini', 'w') as outfile:
                 json.dump(iniProfiles, outfile, sort_keys = False, indent = 4, ensure_ascii = False)
             return "Update"
         profileIndex = profileIndex + 1
-        
+
     # No match, so append the new profile (profileDetails) to the end of the profiles, write it all back to the ini file then return.
 
     profileDetails["lastRunTime"] = "" # since this is a new profile, ensure lastRunTime is blank
-    
+
     iniProfiles.append(profileDetails)
 
     with open(BEE_PATH + "/backend" + '/beeProfileList.ini', 'w') as outfile:
@@ -601,12 +780,12 @@ def deleteProfile(profileToDeleteName):
             except:
                 pass
             return "Delete"
-        
-        profileIndex = profileIndex + 1    
-                      
+
+        profileIndex = profileIndex + 1
+
     # Could not find matching profile, so return 'Not found'
     return 'Not found'
-                      
+
 
 
 def generateOutput(profileName):
@@ -614,8 +793,8 @@ def generateOutput(profileName):
     # (This functions runs getOrderBook, and therefore takes a while.
 
     from datetime import datetime # To access GMT time
-    
-    # Load all the profiles 
+
+    # Load all the profiles
     iniProfiles = json.loads(open(BEE_PATH + "/backend" + '/beeProfileList.ini').read())
 
     # Find the matching profile.
@@ -623,7 +802,7 @@ def generateOutput(profileName):
         if aProfile["profileName"] == profileName:
 
             # Found matching profile - so get the orderbook, generate the stats, write a new line to the output file then return.
-            
+
             orderBook, failedExchanges = getOrderBook(aProfile["exchangeList"])
 
             # Get the stats
@@ -633,16 +812,16 @@ def generateOutput(profileName):
             # - asksBTCTotal
             # - list of pricesAtBidDepths,
             # - list of pricesAtAskDepths,
-            # - list of bid 'ratios' for each entry in depthList 
+            # - list of bid 'ratios' for each entry in depthList
             outputLine = constructProfileStatsTextLine(statsList)
             errorColumn = [str(error) for error in [failedExchanges, maxOutError] if error]
             errorColumn = ["[" + " | ".join(errorColumn) + "]" if errorColumn else ""][0]
             outputLine += errorColumn + "\n"
-            
+
             # Check the logfile directory exists. If not create it.
             if not os.path.exists(BEE_PATH + "/logfiles"):
-                os.makedirs(BEE_PATH + "/logfiles") 
-            
+                os.makedirs(BEE_PATH + "/logfiles")
+
             # Build the output filename
             outFilename = BEE_PATH + "/logfiles/bee_" + aProfile["profileName"] + ".txt"
 
@@ -650,18 +829,18 @@ def generateOutput(profileName):
             # It will look something like this:
             #
             #    Profile: profile06
-            #    Exchanges: Bitfinex, Bitstamp, Coinbase, Okcoin, Btce, Btcx, Itbit, 
+            #    Exchanges: Bitfinex, Bitstamp, Coinbase, Okcoin, Btce, Btcx, Itbit,
             #
-            #    GMT, Bid Total Fiat, Ask Total BTC, Bid10, Ask10, Bid100, Ask100, Bid1000, Ask1000, Bid10000, Ask10000, Bid100000, Ask100000, 
+            #    GMT, Bid Total Fiat, Ask Total BTC, Bid10, Ask10, Bid100, Ask100, Bid1000, Ask1000, Bid10000, Ask10000, Bid100000, Ask100000,
 
             if not os.path.exists(outFilename):
                 with open(outFilename , 'w') as outf:
                     outf.write(constructProfileStatsTextHeader(aProfile))
-            
-            # Append the generated bid and ask prices to end of the output file.  i.e write the line    
+
+            # Append the generated bid and ask prices to end of the output file.  i.e write the line
             with open(outFilename , 'a') as outf:
                 outf.write(outputLine)
-            
+
             return "Found"
 
     return "Not found"
@@ -671,8 +850,8 @@ def getProfileStats(profileName):
     # for a specified profileName, returns JSON stats.
     # Typically used by the UI to retrieve and display the JSON stats.
     # If you want a CSV output, use getProfileStatsText instead.
-    
-    # Load all the profiles 
+
+    # Load all the profiles
     iniProfiles = json.loads(open(BEE_PATH + "/backend" + '/beeProfileList.ini').read())
 
     # Find the matching profile.
@@ -688,7 +867,7 @@ def getProfileStats(profileName):
             # - asksBTCTotal
             # - list of pricesAtBidDepths,
             # - list of pricesAtAskDepths,
-            # - list of bid 'ratios' for each entry in depthList 
+            # - list of bid 'ratios' for each entry in depthList
 
             return json.dumps(statsList, sort_keys=False, indent=4)
 
@@ -700,8 +879,8 @@ def getProfileStatsText(profileName):
     # If you want a JSON output, use getProfileStats() instead.
 
     anExchangeWasDown = False
-    
-    # Load all the profiles 
+
+    # Load all the profiles
     iniProfiles = json.loads(open(BEE_PATH + "/backend" + '/beeProfileList.ini').read())
 
     # Find the matching profile.
@@ -719,18 +898,18 @@ def getProfileStatsText(profileName):
             # - asksBTCTotal
             # - list of pricesAtBidDepths,
             # - list of pricesAtAskDepths,
-            # - list of bid 'ratios' for each entry in depthList 
+            # - list of bid 'ratios' for each entry in depthList
 
             headerText = constructProfileStatsTextHeader(aProfile)
-            lineText   = constructProfileStatsTextLine(statsList) 
+            lineText   = constructProfileStatsTextLine(statsList)
             outputLine = headerText + lineText
-            
+
             errorColumn = [str(error) for error in [failedExchanges, maxOutError] if error]
             errorColumn = ["[" + " | ".join(errorColumn) + "]" if errorColumn else ""][0]
             outputLine += errorColumn + "\n"
-            
+
             return outputLine
-            
+
 
     return "Not found"
 
@@ -741,10 +920,10 @@ def constructProfileStatsTextHeader(aProfile):
     # It will look something like this:
     #
     #    Profile: profile06
-    #    Exchanges: Bitfinex, Bitstamp, Coinbase, Okcoin, Btce, Btcx, Itbit, 
+    #    Exchanges: Bitfinex, Bitstamp, Coinbase, Okcoin, Btce, Btcx, Itbit,
     #
-    #    GMT, Bid Total Fiat, Ask Total BTC, Bid10, Ask10, Bid100, Ask100, Bid1000, Ask1000, Bid10000, Ask10000, Bid100000, Ask100000, 
-    
+    #    GMT, Bid Total Fiat, Ask Total BTC, Bid10, Ask10, Bid100, Ask100, Bid1000, Ask1000, Bid10000, Ask10000, Bid100000, Ask100000,
+
     theOutput = "GMT, Bid Total Fiat, Ask Total BTC, "
 
     # Write out the list of depths labels for this profile.
@@ -752,7 +931,7 @@ def constructProfileStatsTextHeader(aProfile):
         theOutput = theOutput +"Bid" + str(depth) + ", " + "Ask" + str(depth) + ", "
 
     for depth in aProfile["depthList"]:
-        theOutput = theOutput + "BidRatio" + str(depth) + ", " 
+        theOutput = theOutput + "BidRatio" + str(depth) + ", "
 
     theOutput += " Warnings,\n\n"
 
@@ -770,7 +949,7 @@ def constructProfileStatsTextLine(statsList):
 ##    GMTime = datetime.utcnow()
 ##    # Strip millisends from input HR time
 ##    GMTimeNoUsecs = datetime.strptime(GMTime.strftime('%Y-%m-%d %H:%M:%S'), "%Y-%m-%d %H:%M:%S")
-##    
+##
 ##    outputLine = str(GMTimeNoUsecs) + ", " + str(int(statsList[0])) + "," + str(int(statsList[1])) + ", "                  # ASK TOTAL BTC
 
     outputLine = getGMTime() + ", " + str(int(statsList[0])) + "," + str(int(statsList[1])) + ", "                  # ASK TOTAL BTC
@@ -779,16 +958,16 @@ def constructProfileStatsTextLine(statsList):
     depthCounter = 0
     while depthCounter < len(statsList[2]):
         outputLine = outputLine + str(statsList[2][depthCounter]) + ", " +  str(statsList[3][depthCounter]) + ", "      # ASKS
-        
+
         depthCounter = depthCounter + 1
-   
+
     # Add the bid 'ratios'
     depthCounter = 0
     while depthCounter < len(statsList[2]):
         outputLine = outputLine + str(statsList[4][depthCounter]) + ", "       # bid ratios (1k-nk)/1k for each depth
-        
+
         depthCounter = depthCounter + 1
-  
+
 
     return outputLine
 
@@ -801,13 +980,13 @@ def getGMTime():
     GMTime = datetime.utcnow()
     # Strip millisends from input HR time
     GMTimeNoUsecs = datetime.strptime(GMTime.strftime('%Y-%m-%d %H:%M:%S'), "%Y-%m-%d %H:%M:%S")
-    
+
     return str(GMTimeNoUsecs)
 
 
 def getProfileTextFile(profileName, newlinechar="<br>"):
     # Used by the UI - returns the contents of the log file (.txt) for the specified profile.
-    
+
     fileContents = ""
     fileName = BEE_PATH + "/logfiles/bee_" + profileName + ".txt"
     try:
@@ -820,13 +999,13 @@ def getProfileTextFile(profileName, newlinechar="<br>"):
 def statsEngine(action):
 
     import time
-    
+
     ##    # starts, stops and checks the stats engine
     ##    shellOutput = os.popen(BEE_PATH + "/bee.sh " + action)
 
     shellOutput = ""
-    
-    # Allow only specific commands to prevent malicious command injection 
+
+    # Allow only specific commands to prevent malicious command injection
     if action in ["statcheck" , "statstop"]:
         shellOutput = os.popen(BEE_PATH + "/bee.sh " + action).read()
         # status, shellOutput = commands.getstatusoutput(BEE_PATH + "/bee.sh " + action)
@@ -847,14 +1026,14 @@ def statsEngine(action):
 
             if shellOutput == "running\n":
                 shellOutput = "started statistics engine\n" + BEE_PATH + "/backend"
-            
+
     #import subprocess
     # shellOutput = subprocess.check_output(BEE_PATH + "/bee.sh " + action, shell=True)
 
     return shellOutput
 
 def getExchangeDetails(exchangeName):
-    # Given an exchangeName, returns a JSON payload of the specified exchange record. 
+    # Given an exchangeName, returns a JSON payload of the specified exchange record.
 
     import json #Import module that has the ability to encode and decode Json
 
@@ -870,7 +1049,7 @@ def getExchangeDetails(exchangeName):
 def getExchangeRate(originalCurrenySymbol, destinationCurrencySymbol="USD"):
     import requests
     import json
-    
+
     if not originalCurrenySymbol == destinationCurrencySymbol:
         responseJson = requests.get("http://api.fixer.io/latest?symbols=" + destinationCurrencySymbol + "&base=" + originalCurrenySymbol).content.decode("UTF-8")
         decodedResponse = json.loads(responseJson)
@@ -878,3 +1057,36 @@ def getExchangeRate(originalCurrenySymbol, destinationCurrencySymbol="USD"):
         return exchangeRatio
     else:
         return 1
+
+
+def getCurrentPrice(exchanges):
+    import json
+    import requests
+    priceList = []
+    summedPrice = 0
+    exchanges = json.loads(exchanges)
+    with open(BEE_PATH + "/backend/beeExchangeList.ini") as exchangeFile:
+        exchangeDetails = json.loads(exchangeFile.read().strip())
+
+    exchangeNames = [exchange["exchangeName"] for exchange in exchangeDetails]
+    if not exchanges:
+        exchanges = exchangeNames
+    for selectedExchange in exchanges:
+        for exchange in exchangeDetails:
+            if selectedExchange == exchange["exchangeName"]:
+                priceFromExchange = 0
+                try:
+                    priceFromExchange = eval("priceLoad" + exchange["priceAPIType"])(exchange["priceURL"])
+                except:
+                    pass
+                priceFromExchange *= getExchangeRate(exchange["exchangeCurrency"], "USD")
+                if priceFromExchange != 0:
+                    priceList.append(priceFromExchange)
+    for price in priceList:
+        summedPrice += price
+    if len(priceList) != 0:
+        averagePrice = summedPrice / len(priceList)
+    else: 
+        averagePrice = 0
+
+    return str(averagePrice)
