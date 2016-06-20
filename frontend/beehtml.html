@@ -2,14 +2,37 @@
 <head>
 <script src="/beejs.js"></script>
 <link   rel="stylesheet"    type="text/css"     href="/beecss.css"/>
-<link href='https://fonts.googleapis.com/css?family=Share+Tech' rel='stylesheet' type='text/css'>                                                                                                                                                                                                                           
 <link   rel="shortcut icon" type="image/x-icon" href="/webfavicon.ico"/>
-<Title>BEE Access Page</title>    
+<title>BEE Access Page</title>
 </head>
 
 <body>
 <div align="center" id="alignDiv">
 <h2>BEE Access Page</h2>
+<ul id="topNavList">
+    <div id="mainMenu">
+        <li class="navItem" title="Recent Improvements">
+            <img src="/improvementsIcon.png" style="height: auto; width: 31.25%;">
+        </li>
+        <li class="navItem" title="Documentation">
+            <img src="/documentationIcon.png" style="height: auto; width: 41.25%;">
+        </li>
+        <li class="navItem" title="Price" onclick="togglePriceDiv()">
+            <img src="/priceIcon.png" style="height: auto; width: 31.25%;" >
+        </li>
+        <li class="navItem" title="Minimise menu" onclick="document.getElementById('maximiseIcon').style.display = 'block'; document.getElementById('mainMenu').style.display = 'none';">
+            <img src="/minimiseIcon.png" style="height: auto; width: 31.25%;">
+        </li>
+    </div>
+    <li id="maximiseIcon" class="navItem" title="Maximise menu" onclick="document.getElementById('mainMenu').style.display = 'block'; this.style.display = 'none';">
+        <img src="/maximiseIcon.png" style="height: auto; width: 31.25%;">
+    </li>
+</ul>
+<div id="priceDiv">
+  <h4>Average Price:</h4>
+  <h3 id="averageBitcoinPrice"></h3>
+  <img src="/refreshIcon.png" id="refreshIcon" onclick="getAveragePrice()">
+</div>
 <img src="bee.gif" id="beeimg">
 <br>
 <div id="status"></div>
@@ -26,7 +49,9 @@
 <label>Profile List</label>
 <select   id="profileNameList" onchange="getProfileDetails()" multiple></select>
 <br>
+<br>
 <h2><b>Profile Details: </b></h2>
+<br>
 <br>
 <label>Profile Name</label>     <input    id="profileName"     type="text"><br><br>
 <label>Exchange List</label>   <select   id="exchangeList"    onchange="getExchangeDetails()" multiple></select><br><br>
@@ -35,18 +60,18 @@
 <label>Active</label>   <input    id="active"  type="checkbox" name="active"><br><br>
 <label>Depth List</label>             <input    id="depthText"       type="text"><br><br>
 <label>Last Run Time</label>     <input    id="lastRunTime"     type="text"><br><br>
-<label>Stats</label>         <textarea id="statsList"       class="field"   readonly></textarea>                
+<label>Stats</label>         <textarea id="statsList"       class="field"   readonly></textarea>
 <br><br>
 
 <button id="saveButton" onclick="updateProfile()"  title="Save profile" class="button">Save</button>
-<button id="clearButton" onclick="clearScreen()" title="Clear fields" class="button">Clear</button>                     
-<button id="deleteButton" onclick="deleteProfile()" title="Delete profile" class="button">Delete</button>    
+<button id="clearButton" onclick="clearScreen()" title="Clear fields" class="button">Clear</button>
+<button id="deleteButton" onclick="deleteProfile()" title="Delete profile" class="button">Delete</button>
 <br>
 
-<button id="statsButton" onclick="getProfileStatsCSV()" title="Get current CSV stats for this profile" class="button">Get CSV stats</button>  
-<button id="statsButton" onclick="getProfileStatsJSON()" title="Get current JSON stats for this profile" class="button">Get JSON stats</button>      
+<button id="statsButton" onclick="getProfileStatsCSV()" title="Get current CSV stats for this profile" class="button">Get CSV stats</button>
+<button id="statsButton" onclick="getProfileStatsJSON()" title="Get current JSON stats for this profile" class="button">Get JSON stats</button>
 <a id="fileLink" href="" target="_blank">
-<button id="showFileButton" title="Show the output file of this profile" class="button">Show file</button>                                                                                                     
+<button id="showFileButton" title="Show the output file of this profile" class="button">Show file</button>
 </a>
 <br>
 
@@ -56,8 +81,7 @@
 <br>
 
 <a id="exchangeURL" href="javascript:void(0)" target="_blank">
-<button id="showExchangeOrderbookButton" title="Please select one exchange" class="button">Show exchange orderbook</button>                                                                                                     
+<button id="showExchangeOrderbookButton" title="Please select one exchange" class="button">Show exchange orderbook</button>
 </a>
 </div>
 </body>
-
