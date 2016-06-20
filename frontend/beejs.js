@@ -29,7 +29,7 @@ function engineStart()
             HTMLStatsList.innerHTML = req.responseText;
             resizeTextarea(HTMLStatsList);
         }
-    }
+    };
     req.open("POST", "/beeServices/", true);
     req.send("function=statstEngine&action=statstart&password=" + HTMLpassword.value);
 }
@@ -45,7 +45,7 @@ function engineStop()
             HTMLStatsList.innerHTML = req.responseText;
             resizeTextarea(HTMLStatsList);
         }
-    }
+    };
     req.open("POST", "/beeServices/", true);
     req.send("function=statstEngine&action=statstop&password=" + HTMLpassword.value);
 }
@@ -61,7 +61,7 @@ function engineCheck()
             HTMLStatsList.innerHTML = req.responseText;
             resizeTextarea(HTMLStatsList);
         }
-    }
+    };
     req.open("POST", "/beeServices/", true);
     req.send("function=statstEngine&action=statcheck&password=" + HTMLpassword.value);
 }
@@ -84,7 +84,7 @@ function getProfileNameList()
                 currentOption.value = profileNameList[profileIndex];
                 HTMLProfileNameList.add(currentOption);
             }
-            
+
             var profileNameListSize = HTMLProfileNameList.options.length / 2;
             if (profileNameListSize < 12)
             {
@@ -95,8 +95,8 @@ function getProfileNameList()
                 HTMLProfileNameList.size = 12;
             }
         }
-    
-    }
+
+    };
     req.open("POST", "/beeServices/", true);
     req.send("function=getProfileNameList&password=" + HTMLpassword.value);
 }
@@ -119,10 +119,10 @@ function getExchangeList()
                 currentOption.value = exchangeNameList[exchangeIndex];
                 HTMLExchangeNameList.add(currentOption);
             }
-            
+
             var exchangeNameListSize = HTMLExchangeNameList.options.length / 2;
             if (exchangeNameListSize < 12)
-            {   
+            {
                 HTMLExchangeNameList.size = exchangeNameListSize;
             }
             else
@@ -130,7 +130,7 @@ function getExchangeList()
                 HTMLExchangeNameList.size = 12;
             }
         }
-    }
+    };
     req.open("POST", "/beeServices/", true);
     req.send("function=getExchangeList&password=" + HTMLpassword.value);
 }
@@ -145,18 +145,18 @@ function updateProfile()
     var HTMLLastRunTime = document.getElementById("lastRunTime");
     var HTMLActive = document.getElementById("active");
     var HTMLProfileName = document.getElementById("profileName");
-    
+
     var returnProfile = {};
     returnProfile.exchangeList = [];
     returnProfile.depthList = [];
-    
+
     // Contruct object to return to API from screen values
     returnProfile.depthList = HTMLDepthText.value.split(' ').join('').split(",");
     returnProfile.frequencyMins = HTMLFrequencyMins.value;
     returnProfile.lastRunTime = HTMLLastRunTime.value;
     returnProfile.active = HTMLActive.checked;
     returnProfile.profileName = HTMLProfileName.value;
-    
+
     // Save all of the highlighted excahanges to the object to return to the API
     for (var excahangeIndex = 0; excahangeIndex < HTMLExchangeNameList.options.length; excahangeIndex++)
     {
@@ -189,7 +189,7 @@ function updateProfile()
                 HTMLProfileNameList.add(newOption);
             }
         }
-    }
+    };
     req.open("POST", "/beeServices/", true);
     req.send("function=updateProfile&profileDetails=" + returnProfileJSON + "&password=" + HTMLpassword.value);
 }
@@ -211,13 +211,13 @@ function getExchangeDetails()
                 HTMLexchangeOrderbookLink.href = exchangeDetails.exchangeURL;
                 HTMLExchangeOrderbookButton.title = "Show the selected exchange's orderbook";
             }
-        }
+        };
         req.open("POST", "/beeServices/", true);
         req.send("function=getExchangeDetails&exchangeName=" + HTMLExchangeNameList.options[HTMLExchangeNameList.selectedIndex].value + "&password=" + HTMLpassword.value);
     }
     else
     {
-        HTMLexchangeOrderbookLink.href = "javascript:void(0)";
+        HTMLexchangeOrderbookLink.href = "void(0)";
         HTMLExchangeOrderbookButton.title = "Please select one exchange";
     }
 }
@@ -235,10 +235,10 @@ function getProfileDetails()
     var HTMLActive = document.getElementById("active");
     var HTMLFileName = document.getElementById("fileName");
     var HTMLLastRunTime = document.getElementById("lastRunTime");
-    
+
     HTMLStatsList.innerHTML = "";
     resizeTextarea(HTMLStatsList);
-        
+
     var req = new XMLHttpRequest();
     req.onreadystatechange = function() {
         if (req.readyState == 4 && req.status == 200 && checkPassword(req.responseText) == 0)
@@ -250,7 +250,7 @@ function getProfileDetails()
             HTMLActive.checked = (profileDetails.active == true);
             HTMLFileName.value = "bee_" + profileDetails.profileName + ".txt";
             HTMLLastRunTime.value = profileDetails.lastRunTime;
-            
+
             // Highlight the exchanges for this profile (i.e. 'select' the exchange items in the select list)
             for (var exchangeIndex = 0; exchangeIndex < HTMLExchangeNameList.options.length; exchangeIndex++)
             {
@@ -269,7 +269,7 @@ function getProfileDetails()
             HTMLdepthField.value = depthCSV;
             HTMLoutPutFileLink.href = "/beeServices/?function=getProfileTextFile&profileName=" + HTMLProfileName.value + "&password=" + HTMLpassword.value;
         }
-    }
+    };
     req.open("POST", "/beeServices/", true);
     req.send("function=getProfileDetails&profileName=" + HTMLProfileNameList.options[HTMLProfileNameList.selectedIndex].value + "&password=" + HTMLpassword.value);
 }
@@ -285,6 +285,7 @@ function clearScreen()
     document.getElementById("depthText").value = '';
     document.getElementById("lastRunTime").value = '';
     document.getElementById("statsList").innerHTML = "";
+    resizeTextarea(document.getElementById("depthText"));
     setupPage();
 }
 
@@ -305,7 +306,7 @@ function deleteProfile()
         };
         req.open("POST", "/beeServices/", true);
         req.send("function=deleteProfile&profileName=" + selectedProfileName + "&password=" + HTMLpassword.value);
-        
+
     }
 }
 
@@ -323,7 +324,7 @@ function getProfileStatsCSV()
             HTMLStatsList.innerHTML = statsListASCI;
             resizeTextarea(HTMLStatsList);
         }
-    }
+    };
     req.open("POST", "/beeServices/", true);
     req.send("function=getProfileStatsText&profileName=" + selectedProfileName + "&password=" + HTMLpassword.value);
 }
@@ -342,12 +343,12 @@ function getProfileStatsJSON()
             HTMLStatsList.innerHTML = statsListJSON;
             resizeTextarea(HTMLStatsList);
         }
-    }
+    };
     req.open("POST", "/beeServices/", true);
     req.send("function=getProfileStats&profileName=" + selectedProfileName + "&password=" + HTMLpassword.value);
 }
 
-function resizeTextarea(HTMLElement) 
+function resizeTextarea(HTMLElement)
 {
     HTMLElement.style.height = '24px';
     HTMLElement.style.height = HTMLElement.scrollHeight + 12 + 'px';
@@ -357,17 +358,82 @@ function setupPage()
 {
     HTMLPassword = document.getElementById("password");
     HTMLLoginDev = document.getElementById("loginDiv");
-    
+
     var req = new XMLHttpRequest();
     req.onreadystatechange = function() {
         if (req.readyState == 4 && req.status == 200 && checkPassword(req.responseText) == 0)
         {
             HTMLLoginDev.style.display = "none";
             getProfileNameList();
-            getExchangeList(); 
+            getExchangeList();
         }
-    }
+    };
     req.open("POST", "/beeServices/", true);
     req.send("function=getExchangeList&password=" + HTMLPassword.value);
 }
+
+function getAveragePrice()
+{
+  var HTMLExchangeNameList = document.getElementById("exchangeList");
+  var HTMLAveragePrice = document.getElementById("averageBitcoinPrice");
+  var HTMLPassword = document.getElementById("password");
+  var selectedExchangeList = [];
+  var fullExchangeList = [];
+  var sumPrice = 0;
+  var priceCount = 0;
+  var exchangeIndex = 0;
+  
+  
+  function exchangePriceHandler()
+  {
+    if (this.readyState == 4 && this.status == 200 && checkPassword(this.responseText) == 0)
+    {
+      if (parseInt(this.responseText) != 0)
+      {
+          priceCount++;
+          sumPrice = sumPrice + parseInt(this.responseText);
+          HTMLAveragePrice.innerHTML = "USD $" + parseInt(sumPrice / priceCount).toFixed(2);
+      }
+      if (exchangeIndex + 1 <= selectedExchangeList.length)
+      {
+        exchangeIndex++;
+        var req = new XMLHttpRequest(); 
+        req.onreadystatechange = exchangePriceHandler;
+        req.open("POST", "/beeServices/", true);
+        req.send("function=getAveragePrice&exchanges=" + JSON.stringify([selectedExchangeList[exchangeIndex]]) + "&password=" + HTMLPassword.value);
+      }
+    }
+  }
+  
+    for (var currentExcahangeIndex = 0; currentExcahangeIndex < HTMLExchangeNameList.options.length; currentExcahangeIndex++)
+    {
+      fullExchangeList.push(HTMLExchangeNameList.options[currentExcahangeIndex].value);
+      if (HTMLExchangeNameList.options[currentExcahangeIndex].selected)
+      {
+          selectedExchangeList.push(HTMLExchangeNameList.options[currentExcahangeIndex].value);
+      }
+    }
     
+    if (selectedExchangeList.length == 0)
+    {
+        selectedExchangeList = fullExchangeList;
+    }
+    
+    var req = new XMLHttpRequest(); 
+    req.onreadystatechange = exchangePriceHandler;
+    req.open("POST", "/beeServices/", true);
+    req.send("function=getAveragePrice&exchanges=" + JSON.stringify([selectedExchangeList[exchangeIndex]]) + "&password=" + HTMLPassword.value);
+}
+function togglePriceDiv()
+{
+  var HTMLPriceDiv = document.getElementById("priceDiv");
+  if (HTMLPriceDiv.style.display == "block")
+  {
+    HTMLPriceDiv.style.display = "none";
+  }
+  else
+  {
+    HTMLPriceDiv.style.display = "block";
+    getAveragePrice();
+  }
+}
