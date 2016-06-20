@@ -5,7 +5,7 @@
 html
 {
    overflow-x: hidden
-}      
+}
 body
 {
    background-image: url("beeBackground.jpg");
@@ -15,17 +15,17 @@ html *
 {
    font-family: 'ShareTech', sans-serif;
    color: blue;
-   font-weight: 900; 
+   font-weight: 900;
 }
-a
+p, h1, h2, h3, label, a
 {
-    text-decoration: none;
-}
-p, h1, h2, h3, label
-{ 
-   display: block;
    text-align: center;
    text-decoration: none;
+   display: inline;
+}
+label
+{
+   display: block;
 }
 button
 {
@@ -59,7 +59,7 @@ input[type="text"], input[type="number"]
 {
    text-align: left;
    width: 95%
-} 
+}
 #beeimg
 {
    text-align: center;
@@ -69,7 +69,7 @@ input[type="text"], input[type="number"]
    margin-left: auto;
    margin-right: auto;
 }
-alignDiv
+#alignDiv
 {
    text-align: center;
 }
@@ -78,4 +78,57 @@ alignDiv
 }
 #showPasswordLabel {
     display: inline;
+}
+#topNavList
+{
+    position: fixed;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    background-color: #CDDC39;
+    overflow: hidden;
+}
+.navItem
+{
+    float: right;
+    display: block;
+    color: blue;
+    text-align: center;
+    padding: 20px 20px;
+    text-decoration: none;
+    width: 80px;
+    height: 100%;
+}
+.navItem:hover
+{
+    background-color: #00fa7e;
+    cursor: pointer;
+    cursor: hand;
+}
+
+#priceDiv
+{
+  background-color: #CDDC39;
+  position: fixed;
+  text-align: center;
+  display: none;
+  float: right;
+  right: 1%;
+  top:1%;
+  height: auto;
+  width: 25%;
+  overflow: hidden;
+}
+
+#refreshIcon
+{
+  height: auto;
+  width: 9%;
+  cursor: pointer;
+  cursor: hand;
+  margin: 0px;
+}
+#averageBitcoinPrice
+{
+    display: block;
 }
