@@ -1,0 +1,144 @@
+@font-face {
+    font-family: ShareTech;
+    src: url(ShareTech.ttf);
+}
+html
+{
+   overflow-x: hidden
+}
+body
+{
+   background-image: url("beeBackground.jpg");
+   width: 100%;
+}
+html *
+{
+   font-family: 'ShareTech', sans-serif;
+   color: blue;
+   font-weight: 900;
+   border-radius: 4px;
+}
+p, h1, h2, h3, h4, label, a
+{
+   text-align: center;
+   text-decoration: none;
+   display: inline;
+}
+label
+{
+   display: block;
+}
+button
+{
+   background-color: #CDDC39;
+   text-align: left;
+}
+
+label {
+font-size: 1.05em;
+}
+button:hover
+{
+   background-color: blue;
+   color: #CDDC39;
+}
+select
+{
+   width: 95%;
+}
+textarea
+{
+   width: 95%;
+   resize: both;
+   min-height: 60%;
+}
+textarea, input, select
+{
+   background-color: #CDDC39;
+}
+input[type="text"], input[type="number"]
+{
+   text-align: left;
+   width: 95%
+}
+#beeimg
+{
+   text-align: center;
+   width: 15%;
+   height: auto;
+   display: block;
+   margin-left: auto;
+   margin-right: auto;
+}
+#alignDiv
+{
+   text-align: center;
+}
+#password {
+    width: auto;
+}
+#showPasswordLabel {
+    display: inline;
+}
+#topNavList
+{
+    position: fixed;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    background-color: #CDDC39;
+    overflow: hidden;
+}
+.navItem
+{
+    float: right;
+    display: block;
+    color: blue;
+    text-align: center;
+    padding: 20px 20px;
+    text-decoration: none;
+    width: 80px;
+    height: 100%;
+}
+.navItem:hover
+{
+    background-color: #00fa7e;
+    cursor: pointer;
+    cursor: hand;
+}
+
+#priceDiv
+{
+  background-color: #CDDC39;
+  position: fixed;
+  text-align: center;
+  display: none;
+  float: right;
+  right: 2%;
+  height: auto;
+  width: 15%;
+  overflow: hidden;
+  padding: 10px;
+}
+
+#refreshIcon
+{
+  height: auto;
+  width: 15%;
+  cursor: pointer;
+  cursor: hand;
+}
+#mainMenu
+{
+    display: none;
+}
+#priceDivCloseIcon
+{
+    right: 0%;
+    top: 0%;
+    position: absolute;
+    width: 12%;
+    height: auto;
+    cursor: pointer;
+    cursor: hand;
+}
